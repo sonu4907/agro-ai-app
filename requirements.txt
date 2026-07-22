@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+python-multipart
+
+pydantic
+pydantic-settings
+python-dotenv
+
+httpx
+
+Pillow
+opencv-python
+numpy
+
+orjson
+
+loguru

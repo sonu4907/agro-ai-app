@@ -1,0 +1,6 @@
+{
+  "telegram_notifications_enabled": true,
+  "soil_moisture_threshold": 20.0,
+  "water_level_threshold": 13.0,
+  "npk_alerts_enabled": true
+}

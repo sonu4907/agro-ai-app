@@ -1,0 +1,32 @@
+/* index.css — minimal global reset, all real styles live in App.css */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', system-ui, sans-serif; top: 0 !important; position: static !important; }
+#root { min-height: 100vh; }
+
+/* Suppress Google Translate Top Banner and Tooltips for pristine Neon UI */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+.skiptranslate:not(.language-selector-pill),
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+.goog-te-gadget {
+  font-size: 0px !important;
+}
+
+.goog-te-combo {
+  background: transparent !important;
+  color: #38bdf8 !important;
+  border: none !important;
+  font-weight: bold !important;
+  font-size: 13px !important;
+  outline: none !important;
+  cursor: pointer !important;
+}

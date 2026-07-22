@@ -1,0 +1,21 @@
+[Unit]
+Description=Agro AI ML Service
+After=network.target
+
+[Service]
+# Replace 'www-data' and the paths below with your deployment user and venv path
+User=www-data
+Group=www-data
+WorkingDirectory=/home/username/sunil/ml-service
+Environment=PATH=/home/username/venv/bin
+ExecStart=/home/username/venv/bin/gunicorn -k uvicorn.workers.UvicornWorker -w 4 app.main:app -b 127.0.0.1:8000
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+
+# Notes:
+# - Replace /home/username/... with real paths on the server.
+# - Ensure the venv contains gunicorn and your requirements are installed.
