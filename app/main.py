@@ -62,6 +62,11 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api/v1")
 app.include_router(api_router, prefix="/api")
 
+@app.get("/health")
+@app.get("/api/v1/garden/health")
+async def health_check():
+    return {"status": "ok", "message": "Plant Medic Backend Online 🌿"}
+
 # If a built frontend exists at ../frontend/dist, serve it as the root static app.
 build_dir = Path(__file__).resolve().parents[1] / "frontend" / "dist"
 if build_dir.exists():

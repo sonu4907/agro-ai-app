@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getApiUrl } from '../services/apiConfig';
 
 interface CropRecommendation {
   crop_name: string;
@@ -46,7 +47,7 @@ export default function CropRotation({ language, onClose }: CropRotationProps) {
     setResult(null);
 
     try {
-      const response = await fetch('/api/v1/rotation/recommend', {
+      const response = await fetch(getApiUrl('/api/v1/rotation/recommend'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

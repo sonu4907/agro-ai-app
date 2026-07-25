@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { getApiUrl } from '../services/apiConfig'
 
 /* ═══════════════════════════════════════════════════════════
    TYPES
@@ -324,7 +325,7 @@ export default function ARScanner({
     fd.append('language', language)
 
     try {
-      const res  = await fetch('/api/v1/prediction/', { method: 'POST', body: fd })
+      const res  = await fetch(getApiUrl('/api/v1/prediction/'), { method: 'POST', body: fd })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       if (!data.success) throw new Error(data.error || 'Failed')

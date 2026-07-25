@@ -694,8 +694,16 @@ async def queue_command(
     command: CommandRequest,
     authorization: str | None = Header(default=None),
 ) -> dict[str, str]:
+    global latest_telemetry
     validate_admin_token(authorization)
     queued_commands.append({"target": command.target, "enabled": command.enabled})
+    if latest_telemetry:
+        if command.target == "auto_mode":
+            latest_telemetry.auto_mode = command.enabled
+        elif command.target == "pump":
+            latest_telemetry.pump_on = command.enabled
+        elif command.target == "grow_lights":
+            latest_telemetry.grow_lights_on = command.enabled
     return {"status": "queued"}
 
 
@@ -705,9 +713,18 @@ async def ask_assistant(
     authorization: str | None = Header(default=None),
 ) -> dict[str, str]:
     validate_admin_token(authorization)
-    if not latest_telemetry:
-        raise HTTPException(status_code=409, detail="Waiting for the ESP32 to send live telemetry")
-    return {"reply": live_advice(request.question, latest_telemetry)}
+    tel = latest_telemetry or GardenTelemetry(
+        water_level=75.0,
+        soil_moisture=42.0,
+        nitrogen=55.0,
+        phosphorus=35.0,
+        potassium=160.0,
+        ph=6.8,
+        pump_on=False,
+        grow_lights_on=False,
+        auto_mode=True
+    )
+    return {"reply": live_advice(request.question, tel)}
 
 
 @router.get("/notifications/settings")

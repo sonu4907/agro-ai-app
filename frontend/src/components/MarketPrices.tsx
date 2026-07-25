@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiUrl } from '../services/apiConfig';
 
 interface MarketRecord {
   state: string;
@@ -55,7 +56,7 @@ export default function MarketPrices({ language, onClose }: MarketPricesProps) {
     setSubLoading(true);
     setSubNotice(null);
     try {
-      const res = await fetch('/api/v1/market/subscribe-alerts', {
+      const res = await fetch(getApiUrl('/api/v1/market/subscribe-alerts'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -90,7 +91,7 @@ export default function MarketPrices({ language, onClose }: MarketPricesProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/v1/market/prices', {
+      const response = await fetch(getApiUrl('/api/v1/market/prices'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { getApiUrl } from '../services/apiConfig'
 import type { AgroAIResponse } from '../types'
 
 function severityScore(s: string | undefined): number {
@@ -164,7 +165,7 @@ export default function RecoveryTracker({ originalResult, originalImage: _origin
       fd.append('image', afterFile)
       fd.append('language', language || 'english')
 
-      const res = await fetch('/api/v1/prediction/', {
+      const res = await fetch(getApiUrl('/api/v1/prediction/'), {
         method: 'POST', body: fd
       })
       const data: AgroAIResponse = await res.json()

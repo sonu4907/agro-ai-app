@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { getApiUrl } from '../services/apiConfig';
 import './GlobalAIChatModal.css';
 
 interface GlobalAIChatModalProps {
@@ -125,18 +126,12 @@ export default function GlobalAIChatModal({
 
       let data: any = null;
       try {
-        let res = await fetch('/api/v1/chat', { method: 'POST', body: formData });
-        if (!res.ok) {
-          res = await fetch('http://127.0.0.1:8000/api/v1/chat', { method: 'POST', body: formData });
-        }
+        const res = await fetch(getApiUrl('/api/v1/chat'), { method: 'POST', body: formData });
         if (res.ok) {
           data = await res.json();
         }
       } catch (err) {
-        try {
-          const res = await fetch('http://127.0.0.1:8000/api/v1/chat', { method: 'POST', body: formData });
-          if (res.ok) data = await res.json();
-        } catch (e2) {}
+        console.error("Chat API request failed", err);
       }
 
       if (data && data.reply) {

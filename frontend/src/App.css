@@ -2935,3 +2935,1456 @@ html.theme-pure-white .sh-subtitle,
 .light-mode .sh-subtitle {
   color: #334155 !important;
 }
+
+/* ╔══════════════════════════════════════════════════════════════════════════════╗
+   ║  MOBILE-FIRST UI OVERRIDES — BOTTOM NAV BAR & FULL MOBILE LAYOUT          ║
+   ║  Added 2026-07-24 — Appended (does NOT modify any existing CSS above)     ║
+   ╚══════════════════════════════════════════════════════════════════════════════╝ */
+
+/* ── BOTTOM NAVIGATION BAR ─────────────────────────────────── */
+.bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9990;
+  height: 64px;
+  padding: 4px 0 calc(4px + env(safe-area-inset-bottom, 0px));
+  background: rgba(8, 14, 28, 0.95);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  padding: 6px 4px;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  min-height: auto;
+}
+.bottom-nav-item::after {
+  display: none !important;
+}
+
+.bottom-nav-item .bnav-icon {
+  font-size: 22px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.bottom-nav-item .bnav-label {
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bottom-nav-item.bnav-active {
+  color: #22c55e;
+}
+.bottom-nav-item.bnav-active .bnav-icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.5));
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.9) !important;
+}
+
+/* Scan center button (special round FAB-style) */
+.bottom-nav-item.bnav-scan {
+  position: relative;
+}
+.bottom-nav-item.bnav-scan .bnav-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+  margin-top: -18px;
+  border: 3px solid rgba(8, 14, 28, 0.95);
+}
+.bottom-nav-item.bnav-scan .bnav-label {
+  color: #22c55e;
+  font-weight: 800;
+}
+
+/* Badge on bottom nav items */
+.bnav-badge {
+  position: absolute;
+  top: 2px;
+  right: calc(50% - 18px);
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid rgba(8, 14, 28, 0.95);
+}
+
+/* Hide bottom nav on desktop */
+@media (min-width: 769px) {
+  .bottom-nav {
+    display: none !important;
+  }
+}
+
+/* ── MOBILE HAMBURGER MENU ─────────────────────────────────── */
+.mobile-menu-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #e2e8f0;
+  font-size: 20px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-height: 36px !important;
+}
+.mobile-menu-btn::after { display: none !important; }
+
+/* ── MOBILE SLIDE-DOWN MENU PANEL ─────────────────────────── */
+.mobile-menu-panel {
+  display: none;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+  background: rgba(8, 14, 28, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 20px 16px 80px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: slide-down-menu 0.25s ease-out;
+}
+.mobile-menu-panel.menu-open {
+  display: block;
+}
+
+@keyframes slide-down-menu {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-menu-section {
+  margin-bottom: 20px;
+}
+.mobile-menu-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+.mobile-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.mobile-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: auto !important;
+}
+.mobile-menu-item::after { display: none !important; }
+.mobile-menu-item:hover,
+.mobile-menu-item:active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.mobile-menu-item .mm-icon {
+  font-size: 24px;
+}
+.mobile-menu-item.mm-active {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+/* ── MOBILE VIEWPORT OVERRIDES ─────────────────────────────── */
+@media (max-width: 768px) {
+  /* Show hamburger, hide desktop nav items */
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+
+  /* Hide desktop nav buttons on mobile */
+  .nav-hub-trigger,
+  .control-hub-container,
+  .nav-status,
+  .nav-pill {
+    display: none !important;
+  }
+
+  /* Compact navbar */
+  .navbar {
+    padding: 10px 16px !important;
+    height: 56px;
+    gap: 8px;
+  }
+  .nav-brand {
+    gap: 6px !important;
+  }
+  .nav-leaf {
+    font-size: 22px !important;
+  }
+  .nav-title {
+    font-size: 16px !important;
+  }
+  .nav-right {
+    gap: 6px !important;
+  }
+
+  /* Main content: add bottom padding for bottom nav bar */
+  .root-wrap {
+    padding-bottom: 72px !important;
+  }
+  .main-wrap {
+    padding-bottom: 8px !important;
+  }
+
+  /* Hero section: full width, no centering max-width */
+  .hero-section {
+    padding: 20px 16px 24px !important;
+    gap: 20px !important;
+    max-width: 100% !important;
+  }
+  .hero-title-block {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .hero-h1 {
+    font-size: 26px !important;
+    letter-spacing: -0.5px !important;
+    margin-bottom: 12px !important;
+  }
+  .hero-sub {
+    font-size: 14px !important;
+    margin-bottom: 16px !important;
+  }
+  .hero-badge {
+    font-size: 11px !important;
+    padding: 5px 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Feature chips: horizontal scroll */
+  .feature-chips {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding-bottom: 4px !important;
+    justify-content: flex-start !important;
+    scrollbar-width: none !important;
+  }
+  .feature-chips::-webkit-scrollbar { display: none !important; }
+  .chip {
+    flex-shrink: 0 !important;
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+  }
+
+  /* 3D plant image */
+  .animated-3d-plant {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  /* Upload card: full width */
+  .upload-card {
+    max-width: 100% !important;
+    padding: 16px !important;
+    border-radius: 16px !important;
+    gap: 16px !important;
+  }
+  .auth-gate-card {
+    padding: 20px 16px !important;
+  }
+
+  /* Drop zone */
+  .drop-zone {
+    min-height: 180px !important;
+    border-radius: 14px !important;
+  }
+  .dz-icon-ring {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 24px !important;
+  }
+  .dz-headline {
+    font-size: 15px !important;
+  }
+  .dz-sub {
+    font-size: 13px !important;
+  }
+  .preview-wrap {
+    height: 220px !important;
+  }
+  .preview-actions {
+    opacity: 1 !important;
+  }
+
+  /* Weather panel */
+  .weather-panel {
+    max-width: 100% !important;
+    border-radius: 16px !important;
+    margin: 0 !important;
+  }
+  .wp-top {
+    padding: 14px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+  .wp-divider {
+    display: none !important;
+  }
+  .wp-weather-block {
+    width: 100% !important;
+  }
+  .wp-condition {
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+  .wp-emoji {
+    font-size: 36px !important;
+  }
+  .wp-temp {
+    font-size: 32px !important;
+  }
+  .wp-stats-grid {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  .ws-stat {
+    min-width: auto !important;
+    padding: 8px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  }
+  .wp-risk-block {
+    width: 100% !important;
+    margin-left: 0 !important;
+    align-items: stretch !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+  }
+  .wp-summary {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+  .wp-risks-expanded {
+    padding: 14px !important;
+  }
+  .wrc-top {
+    padding: 10px 12px 8px !important;
+  }
+  .wrc-disease {
+    font-size: 14px !important;
+  }
+  .wrc-crops {
+    font-size: 11px !important;
+  }
+  .wp-conditions-strip {
+    flex-direction: column !important;
+  }
+  .wc-item {
+    min-width: 100% !important;
+  }
+
+  /* Info panels (stats under hero) */
+  .hero-info-panels {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    max-width: 100% !important;
+  }
+  .info-panel {
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+  .info-panel-icon {
+    font-size: 24px !important;
+  }
+  .info-panel-title {
+    font-size: 13px !important;
+  }
+
+  /* Results section */
+  .results-section {
+    padding: 16px 16px 40px !important;
+    gap: 14px !important;
+    max-width: 100% !important;
+  }
+
+  /* Disease header */
+  .disease-name-header {
+    flex-direction: column !important;
+    gap: 16px !important;
+    padding: 16px !important;
+    border-radius: 16px !important;
+    margin-bottom: 14px !important;
+  }
+  .main-disease-name {
+    font-size: 22px !important;
+  }
+  .header-subtitle {
+    font-size: 13px !important;
+  }
+  .header-image-container {
+    width: 100% !important;
+    height: 180px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Result actions row */
+  .results-actions-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .results-actions-row > button,
+  .results-actions-row > div {
+    width: 100% !important;
+  }
+  .back-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 16px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+  }
+
+  /* Metric pills: vertical stack */
+  .metric-pills-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .mpill {
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    min-width: auto !important;
+  }
+  .mpill-icon {
+    font-size: 26px !important;
+  }
+  .mpill-val {
+    font-size: 17px !important;
+  }
+
+  /* Accordion */
+  .accordion-section {
+    margin-bottom: 10px !important;
+    border-radius: 14px !important;
+  }
+  .accordion-btn {
+    padding: 14px 16px !important;
+    font-size: 14px !important;
+    gap: 10px !important;
+  }
+  .accordion-icon {
+    font-size: 20px !important;
+  }
+  .accordion-arrow {
+    font-size: 20px !important;
+  }
+  .accordion-content {
+    padding: 0 16px 14px !important;
+  }
+
+  /* Plant info grid */
+  .plant-info-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  .pi-item {
+    padding: 12px 14px !important;
+  }
+
+  /* Disease columns */
+  .disease-cols {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  .dis-col {
+    padding: 14px !important;
+  }
+  .dis-meta-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Treatment columns */
+  .treat-cols {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  .treat-box {
+    padding: 14px !important;
+  }
+
+  /* Care icons */
+  .care-icons-row {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  .ci-item {
+    padding: 12px 10px !important;
+    gap: 8px !important;
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+  .ci-emoji {
+    font-size: 24px !important;
+  }
+  .ci-info {
+    align-items: center !important;
+  }
+
+  /* Advice sections */
+  .advice-row {
+    grid-template-columns: 1fr !important;
+  }
+  .advice-list {
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+  .advice-list li {
+    font-size: 13px !important;
+    gap: 10px !important;
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    padding: 14px !important;
+    border-radius: 14px !important;
+    gap: 10px !important;
+  }
+
+  /* Scan again button */
+  .scan-again-btn {
+    width: 100% !important;
+    padding: 14px 24px !important;
+    font-size: 15px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Loading section */
+  .loading-section {
+    padding: 20px 16px !important;
+    min-height: calc(100vh - 140px) !important;
+  }
+  .loading-card {
+    padding: 32px 20px !important;
+    border-radius: 20px !important;
+    max-width: 100% !important;
+  }
+  .loading-h2 {
+    font-size: 20px !important;
+  }
+  .loader-ring-wrap {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  /* Auth page */
+  .auth-page {
+    padding: 20px 16px !important;
+    min-height: calc(100vh - 140px) !important;
+  }
+  .auth-card {
+    padding: 24px 20px !important;
+    border-radius: 20px !important;
+  }
+  .auth-title {
+    font-size: 24px !important;
+  }
+
+  /* Camera */
+  .camera-panel {
+    border-radius: 14px !important;
+    min-height: 280px !important;
+  }
+  .camera-viewport {
+    min-height: 260px !important;
+    max-height: 360px !important;
+  }
+  .camera-video,
+  .camera-captured-img {
+    min-height: 260px !important;
+    max-height: 340px !important;
+  }
+  .shutter-ring {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .shutter-inner {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  /* Bandwidth toggle */
+  .bandwidth-toggle-row {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Mode tabs */
+  .mode-tabs {
+    border-radius: 12px !important;
+  }
+  .mode-tab {
+    font-size: 13px !important;
+    padding: 10px 8px !important;
+    gap: 6px !important;
+  }
+
+  /* Scan History panel — full width */
+  .sh-panel {
+    width: 100vw !important;
+    border-left: none !important;
+  }
+  .sh-stats-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .sh-detail-modal {
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+  .sh-detail-top {
+    flex-direction: column !important;
+  }
+  .sh-detail-img {
+    width: 100% !important;
+    height: 180px !important;
+  }
+  .sh-detail-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .sh-detail-actions .sh-btn {
+    width: 100% !important;
+  }
+
+  /* Features & Control Hub dropdowns */
+  .neon-hub-card {
+    width: calc(100vw - 32px) !important;
+    max-width: calc(100vw - 32px) !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    max-height: 80vh !important;
+  }
+
+  /* Hub grid */
+  .hub-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  .hub-btn {
+    padding: 12px 8px !important;
+    border-radius: 12px !important;
+    font-size: 11px !important;
+  }
+  .hub-emoji {
+    font-size: 22px !important;
+  }
+
+  /* Language pills in hub */
+  .hub-lang-selector {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+  .hub-lang-pill {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  /* Theme selector in hub */
+  .hub-theme-selector {
+    gap: 6px !important;
+  }
+
+  /* Share modal */
+  .share-fallback-modal {
+    max-width: calc(100vw - 32px) !important;
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+  }
+  .share-options-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  .share-option-btn {
+    padding: 14px 16px !important;
+    font-size: 14px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Offline queue modal */
+  .offline-queue-modal {
+    max-width: calc(100vw - 32px) !important;
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+  }
+
+  /* Blobs: smaller on mobile */
+  .blob-1 { width: 300px !important; height: 300px !important; }
+  .blob-2 { width: 250px !important; height: 250px !important; }
+  .blob-3 { width: 200px !important; height: 200px !important; }
+
+  /* Crop Rotation: mobile overrides */
+  .cr-container {
+    max-width: 100% !important;
+    padding: 0 16px 80px !important;
+  }
+  .cr-content-layout {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .cr-form-card {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  .cr-assessment-card {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  .cr-sections-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .cr-crop-card {
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+  .cr-crop-details-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Market Prices container */
+  .market-prices-container {
+    max-width: 100% !important;
+    padding: 0 12px 80px !important;
+  }
+  .mp-header {
+    padding: 16px !important;
+    border-radius: 16px !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .mp-title {
+    font-size: 20px !important;
+  }
+  .mp-filter-card {
+    padding: 16px !important;
+    border-radius: 16px !important;
+  }
+  .mp-filter-form {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .mp-form-group {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+  .mp-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 12px !important;
+  }
+  .mp-table th,
+  .mp-table td {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Voice button & PDF buttons row */
+  .voice-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Result banner */
+  .result-banner {
+    flex-direction: column !important;
+    padding: 20px 16px !important;
+    border-radius: 16px !important;
+    gap: 16px !important;
+  }
+  .banner-img {
+    width: 100% !important;
+    height: 180px !important;
+    border-radius: 12px !important;
+  }
+  .banner-disease-name {
+    font-size: 22px !important;
+  }
+
+  /* Footer — hidden on mobile (replaced by bottom nav) */
+  .site-footer {
+    display: none !important;
+  }
+
+  /* Compression savings badge */
+  .compression-savings-badge {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* Inline error */
+  .inline-error {
+    border-radius: 12px !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+
+  /* Stats row */
+  .stats-row {
+    padding: 12px 16px !important;
+    gap: 12px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Language Selector in nav - compact */
+  .language-selector-pill {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+/* ── Extra Small Screens (under 380px) ─────────────────────── */
+@media (max-width: 380px) {
+  .hero-h1 {
+    font-size: 22px !important;
+  }
+  .hub-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .care-icons-row {
+    grid-template-columns: 1fr !important;
+  }
+  .bottom-nav-item .bnav-label {
+    font-size: 9px !important;
+  }
+  .bottom-nav-item .bnav-icon {
+    font-size: 20px !important;
+  }
+  .bottom-nav-item.bnav-scan .bnav-icon {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .accordion-btn {
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+  }
+  .mpill-val {
+    font-size: 15px !important;
+  }
+}
+
+/* ── Pure White Theme Mobile Overrides ─────────────────────── */
+@media (max-width: 768px) {
+  html.theme-pure-white .bottom-nav {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-top-color: rgba(15, 23, 42, 0.08) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08) !important;
+  }
+  html.theme-pure-white .bottom-nav-item {
+    color: #64748b !important;
+  }
+  html.theme-pure-white .bottom-nav-item.bnav-active {
+    color: #16a34a !important;
+  }
+  html.theme-pure-white .mobile-menu-panel {
+    background: rgba(255, 255, 255, 0.97) !important;
+  }
+  html.theme-pure-white .mobile-menu-item {
+    background: rgba(15, 23, 42, 0.03) !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
+    color: #0f172a !important;
+  }
+  html.theme-pure-white .mobile-menu-section-title {
+    color: #94a3b8 !important;
+  }
+  html.theme-pure-white .navbar {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   EXACT REFERENCE SCREENSHOT DESIGN MATCH (PIXEL-PERFECT MOBILE OVERRIDES)
+   ══════════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* 1. Global Page Background & Ambient Emerald Glow */
+  body, #root, .root-wrap, .app-container {
+    background: #051412 !important;
+    background-image: 
+      radial-gradient(circle at 50% 12%, rgba(0, 255, 157, 0.16) 0%, transparent 55%),
+      radial-gradient(circle at 50% 65%, rgba(0, 229, 255, 0.1) 0%, transparent 60%) !important;
+    background-attachment: fixed !important;
+    color: #e2e8f0 !important;
+  }
+
+  /* 2. Header / Navbar Styling */
+  .navbar {
+    background: transparent !important;
+    border: none !important;
+    padding: 14px 18px !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  .nav-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+  .nav-leaf {
+    font-size: 26px !important;
+    color: #00ff9d !important;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 157, 0.8)) !important;
+  }
+  .nav-title {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  /* Hamburger Menu button top right */
+  .mobile-menu-btn {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    color: #ffffff !important;
+    font-size: 22px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  /* Hide extra non-essential top elements on mobile */
+  .language-selector-container,
+  .nav-hub-trigger,
+  .hero-badge,
+  .hero-title-block p,
+  .stats-row,
+  .animated-3d-plant {
+    display: none !important;
+  }
+
+  .hero-section {
+    padding: 8px 16px 20px !important;
+    gap: 16px !important;
+  }
+
+  /* 3. Crop Scanner Card (Top Card) */
+  .upload-card {
+    background: rgba(8, 26, 23, 0.65) !important;
+    border: 1.5px solid #00ff9d !important;
+    box-shadow: 0 0 22px rgba(0, 255, 157, 0.3), inset 0 0 15px rgba(0, 255, 157, 0.06) !important;
+    border-radius: 24px !important;
+    padding: 16px !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+  }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 1.5px dashed rgba(255, 255, 255, 0.45) !important;
+    border-radius: 18px !important;
+    background: rgba(0, 255, 157, 0.03) !important;
+    min-height: 150px !important;
+    padding: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .dz-inner {
+    padding: 0 !important;
+    gap: 10px !important;
+  }
+  .dz-icon-ring {
+    background: none !important;
+    border: none !important;
+    width: auto !important;
+    height: auto !important;
+    font-size: 36px !important;
+    color: #00ff9d !important;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 157, 0.7)) !important;
+  }
+  .dz-headline {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+  }
+  .dz-sub, .dz-hint-chips {
+    display: none !important;
+  }
+
+  /* Main Action Pill Button ("Analyze Crop Health") */
+  .analyze-btn {
+    background: linear-gradient(135deg, #00ff9d 0%, #00e5ff 100%) !important;
+    color: #031410 !important;
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    border-radius: 30px !important;
+    padding: 16px 20px !important;
+    border: none !important;
+    box-shadow: 0 0 25px rgba(0, 255, 157, 0.45), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+    letter-spacing: -0.2px !important;
+    margin-top: 4px !important;
+  }
+  .analyze-btn-arrow {
+    display: none !important;
+  }
+
+  /* 4. Weather Panel (Middle Card) */
+  .weather-panel {
+    background: rgba(6, 22, 32, 0.65) !important;
+    border: 1.5px solid #00e5ff !important;
+    box-shadow: 0 0 22px rgba(0, 229, 255, 0.28), inset 0 0 15px rgba(0, 229, 255, 0.05) !important;
+    border-radius: 24px !important;
+    padding: 0 !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    overflow: hidden !important;
+  }
+  .wp-top {
+    padding: 16px 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  .wp-weather-block {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .wp-location {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+  .wp-condition {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  .wp-temp {
+    font-size: 38px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+  }
+  .wp-desc {
+    font-size: 13px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  /* Disease Risk Badge Circle on the Right */
+  .wp-risk-block {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+  .wp-risk-badge {
+    width: 90px !important;
+    height: 90px !important;
+    border-radius: 50% !important;
+    border: 3px solid #eab308 !important;
+    background: rgba(0, 0, 0, 0.35) !important;
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.3) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px !important;
+    text-align: center !important;
+    color: #facc15 !important;
+  }
+
+  /* 5. Humidity & Wind Cards Grid below Weather */
+  .wp-stats-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    padding: 0 18px 16px !important;
+    width: 100% !important;
+  }
+  .ws-stat {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 18px !important;
+    padding: 12px 14px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+  .ws-stat-icon {
+    font-size: 24px !important;
+  }
+  .ws-stat-val {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+  }
+  .ws-stat-label {
+    font-size: 11px !important;
+    color: #94a3b8 !important;
+  }
+
+  /* 6. Floating Dock Bottom Navigation Bar */
+  .bottom-nav {
+    position: fixed !important;
+    bottom: 12px !important;
+    left: 14px !important;
+    right: 14px !important;
+    z-index: 9999 !important;
+    height: 64px !important;
+    border-radius: 28px !important;
+    background: rgba(8, 24, 20, 0.88) !important;
+    backdrop-filter: blur(20px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+    border: 1.5px solid rgba(0, 255, 157, 0.25) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 255, 157, 0.15) !important;
+    padding: 0 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+  }
+
+  .bottom-nav-item {
+    color: #94a3b8 !important;
+  }
+  .bottom-nav-item.bnav-active {
+    color: #00ff9d !important;
+  }
+  .bottom-nav-item.bnav-active .bnav-icon {
+    transform: scale(1.1) !important;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 157, 0.8)) !important;
+  }
+
+  /* Center Scan FAB button */
+  .bottom-nav-item.bnav-scan .bnav-icon {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #00ff9d 0%, #10b981 100%) !important;
+    border: 3px solid #051412 !important;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.65), 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+    margin-top: -22px !important;
+    color: #ffffff !important;
+    font-size: 24px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   PREMIUM MOBILE QUALITY ENHANCEMENTS & MICRO-INTERACTIONS
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Active Touch Haptic Feedback Animation */
+button:active, .mobile-menu-item:active, .bottom-nav-item:active, .accordion-btn:active {
+  transform: scale(0.96) !important;
+  filter: brightness(1.15) !important;
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Pulsing Glowing Ring Animation for Center Camera FAB */
+@keyframes fabPulseGlow {
+  0% {
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.6), 0 4px 15px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.9), 0 0 45px rgba(0, 229, 255, 0.5), 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.6), 0 4px 15px rgba(0, 0, 0, 0.4);
+  }
+}
+
+.bottom-nav-item.bnav-scan .bnav-icon {
+  animation: fabPulseGlow 2.5s infinite ease-in-out !important;
+}
+
+/* Smooth Slide-Up Animation for Modal Drawers */
+@keyframes mobileModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sh-detail-modal, .global-chat-window, .mobile-menu-panel.menu-open {
+  animation: mobileModalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+/* Custom Scrollbar for Phone Viewports */
+::-webkit-scrollbar {
+  width: 4px !important;
+  height: 4px !important;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 157, 0.4) !important;
+  border-radius: 4px !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 157, 0.8) !important;
+}
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  CLAYMORPHISM 3D DESIGN SYSTEM                           ║
+   ╚══════════════════════════════════════════════════════════╝ */
+html.theme-claymorphism {
+  --app-bg: #22140d;
+  --card-bg: rgba(54, 32, 21, 0.92);
+  --card-border: rgba(255, 175, 130, 0.25);
+  --text-muted: #d4a38b;
+  --radius: 28px;
+  --radius-sm: 18px;
+}
+
+html.theme-claymorphism body {
+  background: radial-gradient(circle at 50% 10%, #3a2217 0%, #1e110a 100%) !important;
+  color: #fff3eb !important;
+}
+
+html.theme-claymorphism button,
+html.theme-claymorphism .nav-pill,
+html.theme-claymorphism .nav-hub-trigger,
+html.theme-claymorphism .hub-btn-garden,
+html.theme-claymorphism .hub-btn-ar,
+html.theme-claymorphism .hub-btn-rotation,
+html.theme-claymorphism .hub-btn-history,
+html.theme-claymorphism .hub-btn-market,
+html.theme-claymorphism .mobile-menu-item,
+html.theme-claymorphism .garden-card,
+html.theme-claymorphism .upload-card,
+html.theme-claymorphism .info-panel,
+html.theme-claymorphism .neon-hub-card,
+html.theme-claymorphism .system-control-btn-card,
+html.theme-claymorphism .garden-modal-content,
+html.theme-claymorphism .cr-card,
+html.theme-claymorphism .feat-row {
+  border-radius: 24px !important;
+  background: linear-gradient(145deg, #44281b, #331e13) !important;
+  border: 1.5px solid rgba(255, 185, 140, 0.22) !important;
+  box-shadow: 
+    8px 12px 24px rgba(0, 0, 0, 0.45),
+    inset -3px -4px 8px rgba(0, 0, 0, 0.35),
+    inset 3px 4px 8px rgba(255, 220, 200, 0.2) !important;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease !important;
+}
+
+html.theme-claymorphism button:hover:not(:disabled),
+html.theme-claymorphism .system-control-btn-card:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 
+    10px 16px 30px rgba(0, 0, 0, 0.55),
+    inset -3px -4px 8px rgba(0, 0, 0, 0.3),
+    inset 4px 5px 10px rgba(255, 230, 210, 0.3) !important;
+}
+
+html.theme-claymorphism button:active:not(:disabled),
+html.theme-claymorphism .system-control-btn-card.active {
+  transform: translateY(2px) scale(0.97) !important;
+  box-shadow: 
+    inset 4px 5px 10px rgba(0, 0, 0, 0.5),
+    inset -3px -3px 8px rgba(255, 200, 170, 0.15) !important;
+}
+
+html.theme-claymorphism .hub-theme-dot.theme-claymorphism {
+  background: linear-gradient(135deg, #f97316, #ea580c) !important;
+  box-shadow: 4px 6px 12px rgba(0, 0, 0, 0.4), inset -2px -2px 5px rgba(0, 0, 0, 0.3), inset 2px 2px 5px rgba(255, 200, 170, 0.4) !important;
+}
+
+/* Claymorphism glowing accents */
+html.theme-claymorphism .control-icon-circle.blue,
+html.theme-claymorphism .toggle-slider.blue-glow {
+  background: linear-gradient(145deg, #38bdf8, #0284c7) !important;
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.5), inset -2px -2px 6px rgba(0, 0, 0, 0.3), inset 2px 2px 6px rgba(255, 255, 255, 0.4) !important;
+}
+
+html.theme-claymorphism .control-icon-circle.green,
+html.theme-claymorphism .toggle-slider.green-glow {
+  background: linear-gradient(145deg, #4ade80, #16a34a) !important;
+  box-shadow: 0 6px 18px rgba(74, 222, 128, 0.5), inset -2px -2px 6px rgba(0, 0, 0, 0.3), inset 2px 2px 6px rgba(255, 255, 255, 0.4) !important;
+}
+
+html.theme-claymorphism .control-icon-circle.orange,
+html.theme-claymorphism .toggle-slider.orange-glow {
+  background: linear-gradient(145deg, #f97316, #c2410c) !important;
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.5), inset -2px -2px 6px rgba(0, 0, 0, 0.3), inset 2px 2px 6px rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  REALISTIC SKEUOMORPHISM UI DESIGN SYSTEM                ║
+   ╚══════════════════════════════════════════════════════════╝ */
+html.theme-skeuomorphism {
+  --app-bg: #1a1c1e;
+  --card-bg: linear-gradient(180deg, #2d3238 0%, #1e2226 100%);
+  --card-border: #454c54;
+  --text-muted: #9ba4b0;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+html.theme-skeuomorphism body {
+  background: radial-gradient(circle at 50% 20%, #2c3138 0%, #121416 100%) !important;
+  color: #f1f5f9 !important;
+}
+
+/* Brushed Metallic & Physical Hardware Panels */
+html.theme-skeuomorphism button,
+html.theme-skeuomorphism .nav-pill,
+html.theme-skeuomorphism .nav-hub-trigger,
+html.theme-skeuomorphism .hub-btn-garden,
+html.theme-skeuomorphism .hub-btn-ar,
+html.theme-skeuomorphism .hub-btn-rotation,
+html.theme-skeuomorphism .hub-btn-history,
+html.theme-skeuomorphism .hub-btn-market,
+html.theme-skeuomorphism .mobile-menu-item,
+html.theme-skeuomorphism .garden-card,
+html.theme-skeuomorphism .upload-card,
+html.theme-skeuomorphism .info-panel,
+html.theme-skeuomorphism .neon-hub-card,
+html.theme-skeuomorphism .system-control-btn-card,
+html.theme-skeuomorphism .garden-modal-content,
+html.theme-skeuomorphism .cr-card,
+html.theme-skeuomorphism .feat-row {
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, #3a4048 0%, #24282e 50%, #1a1c20 100%) !important;
+  border: 1px solid #525a64 !important;
+  border-top: 1px solid #788290 !important;
+  border-bottom: 2px solid #0d0e10 !important;
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5) !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Physical Bevel Press Button Effects */
+html.theme-skeuomorphism button:hover:not(:disabled),
+html.theme-skeuomorphism .system-control-btn-card:hover {
+  background: linear-gradient(180deg, #444b54 0%, #2c3138 50%, #202428 100%) !important;
+  box-shadow: 
+    0 12px 25px rgba(0, 0, 0, 0.7),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.theme-skeuomorphism button:active:not(:disabled),
+html.theme-skeuomorphism .system-control-btn-card.active {
+  transform: translateY(2px) !important;
+  background: linear-gradient(180deg, #181a1d 0%, #282c32 100%) !important;
+  box-shadow: 
+    inset 0 3px 6px rgba(0, 0, 0, 0.8),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Physical Mechanical Toggle Switches & Metallic LED Bulbs */
+html.theme-skeuomorphism .toggle-switch {
+  background: #111315 !important;
+  border-radius: 999px !important;
+  padding: 3px !important;
+  border: 1px solid #33383f !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.1) !important;
+}
+
+html.theme-skeuomorphism .toggle-slider {
+  background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%) !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+}
+
+html.theme-skeuomorphism .toggle-switch input:checked + .toggle-slider {
+  background: linear-gradient(180deg, #22c55e 0%, #15803d 100%) !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.8), inset 0 1px 1px rgba(255,255,255,0.6) !important;
+}
+
+/* Physical Camera Viewport Frame */
+html.theme-skeuomorphism .upload-card {
+  border: 4px solid #33383f !important;
+  box-shadow: 
+    0 15px 35px rgba(0,0,0,0.8),
+    inset 0 0 15px rgba(0,0,0,0.9),
+    inset 0 2px 3px rgba(255,255,255,0.3) !important;
+}
+
+

@@ -10,6 +10,13 @@ import CropRotation from './components/CropRotation'
 import PresentationDeck from './components/PresentationDeck'
 import MarketPrices from './components/MarketPrices'
 import GlobalAIChatModal from './components/GlobalAIChatModal'
+import FertilizerCalculatorModal from './components/FertilizerCalculatorModal'
+import SoilCardScannerModal from './components/SoilCardScannerModal'
+import OutbreakRadarModal from './components/OutbreakRadarModal'
+import NDVIMapModal from './components/NDVIMapModal'
+import FarmLedgerModal from './components/FarmLedgerModal'
+import IrrigationSchedulerModal from './components/IrrigationSchedulerModal'
+import VoiceAssistantModal from './components/VoiceAssistantModal'
 import { addScanRecord, buildThumbnail, getScanHistory } from './historyService'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -18,6 +25,7 @@ import { useLanguage, LanguageSelector } from "./context/LanguageContext";
 import { saveScan } from './scanService'
 import { generatePDFDocument, getTextReportForSharing, sharePDFReport } from './services/reportService'
 import { addPendingScan, getPendingScans, removePendingScan } from './services/offlineQueueService'
+import { getApiUrl } from './services/apiConfig'
 
 /* ── Interfaces ─────────────────────────────────────────── */
 interface PlantInfo {
@@ -152,7 +160,12 @@ export default function App() {
 
   /* App Theme State */
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('agro_app_theme') || 'dark-slate'
+    const saved = localStorage.getItem('agro_app_theme')
+    if (!saved || saved === 'dark-slate') {
+      localStorage.setItem('agro_app_theme', 'claymorphism')
+      return 'claymorphism'
+    }
+    return saved
   })
 
   useEffect(() => {
@@ -160,7 +173,23 @@ export default function App() {
     const root = document.documentElement
     root.className = `theme-${theme}`
     
-    if (theme === 'forest-green') {
+    if (theme === 'skeuomorphism') {
+      root.style.setProperty('--app-bg', '#1a1c1e')
+      root.style.setProperty('--blob-1-start', '#64748b')
+      root.style.setProperty('--blob-1-end', '#334155')
+      root.style.setProperty('--blob-2-start', '#22c55e')
+      root.style.setProperty('--blob-2-end', '#15803d')
+      root.style.setProperty('--blob-3-start', '#38bdf8')
+      root.style.setProperty('--blob-3-end', '#0369a1')
+    } else if (theme === 'claymorphism') {
+      root.style.setProperty('--app-bg', '#22140d')
+      root.style.setProperty('--blob-1-start', '#ff8c66')
+      root.style.setProperty('--blob-1-end', '#ea580c')
+      root.style.setProperty('--blob-2-start', '#4ade80')
+      root.style.setProperty('--blob-2-end', '#16a34a')
+      root.style.setProperty('--blob-3-start', '#38bdf8')
+      root.style.setProperty('--blob-3-end', '#0284c7')
+    } else if (theme === 'forest-green') {
       root.style.setProperty('--app-bg', '#04160e')
       root.style.setProperty('--blob-1-start', '#10b981')
       root.style.setProperty('--blob-1-end', '#059669')
@@ -261,6 +290,14 @@ export default function App() {
   const [marketOpen, setMarketOpen] = useState(false);
   const [controlHubOpen, setControlHubOpen] = useState(false);
   const [featuresTabOpen, setFeaturesTabOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [fertilizerCalcOpen, setFertilizerCalcOpen] = useState(false);
+  const [soilCardOpen, setSoilCardOpen] = useState(false);
+  const [outbreakRadarOpen, setOutbreakRadarOpen] = useState(false);
+  const [ndviOpen, setNdviOpen] = useState(false);
+  const [ledgerOpen, setLedgerOpen] = useState(false);
+  const [irrigationOpen, setIrrigationOpen] = useState(false);
+  const [voiceAssistantOpen, setVoiceAssistantOpen] = useState(false);
   const [presentationOpen, setPresentationOpen] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('presentation') === 'true' || window.location.hash === '#presentation' || params.get('ppt') === 'true' || window.location.hash === '#ppt';
@@ -359,7 +396,7 @@ export default function App() {
 
   const openTelegramBot = async () => {
     try {
-      const response = await fetch("/api/v1/telegram/bot-link")
+      const response = await fetch(getApiUrl("/api/v1/telegram/bot-link"))
       const data = (await response.json().catch(() => ({}))) as Record<string, unknown>
       const url = typeof data.url === "string" ? data.url : "https://t.me/Agriculture_ChatBot"
       if (!response.ok && typeof data.url !== "string") {
@@ -733,7 +770,7 @@ export default function App() {
           fd.append("image", file);
           fd.append("language", item.language);
 
-          const res = await fetch("/api/v1/prediction/", { method: "POST", body: fd });
+          const res = await fetch(getApiUrl("/api/v1/prediction/"), { method: "POST", body: fd });
           if (res.ok) {
             const data: AgroAIResponse = await res.json();
             if (data.success) {
@@ -855,7 +892,7 @@ export default function App() {
     fd.append("image", fileToUpload)
     fd.append("language", language)
     try {
-      const res = await fetch("/api/v1/prediction/", { method: "POST", body: fd })
+      const res = await fetch(getApiUrl("/api/v1/prediction/"), { method: "POST", body: fd })
       if (!res.ok) {
         let errorMessage = `Error ${res.status}`
         try {
@@ -1741,10 +1778,16 @@ export default function App() {
       <nav className="navbar">
         <div className="nav-brand">
           <span className="nav-leaf">🌿</span>
-          <span className="nav-title">AgroAI</span>
-          <span className="nav-pill">Plant Medic</span>
+          <span className="nav-title">Plant Medic</span>
         </div>
         <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            title="Menu"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
           <LanguageSelector />
           <button 
             className="nav-hub-trigger" 
@@ -2046,6 +2089,116 @@ export default function App() {
           </div>
         </div>
       </nav>
+
+      {/* ── Mobile Menu Panel ── */}
+      <div className={`mobile-menu-panel ${mobileMenuOpen ? 'menu-open' : ''}`}>
+        <div className="mobile-menu-section">
+          <div className="mobile-menu-section-title">Features</div>
+          <div className="mobile-menu-grid">
+            <button className="mobile-menu-item" onClick={() => { if (!requireAuthForFeature()) return; setGardenOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">🚜</span> Smart Farm
+            </button>
+            <button className="mobile-menu-item" onClick={() => { if (!requireAuthForFeature()) return; setArOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">🤖</span> AR Scan
+            </button>
+            <button className="mobile-menu-item" onClick={() => { if (!requireAuthForFeature()) return; setRotationOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">🔄</span> Crop Rotation
+            </button>
+            <button className="mobile-menu-item" onClick={() => { if (!requireAuthForFeature()) return; setMarketOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">📈</span> Mandi Prices
+            </button>
+            <button className="mobile-menu-item" onClick={() => { if (!requireAuthForFeature()) return; setHistoryOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">📋</span> Scan History
+              {scanCount > 0 && <span className="bnav-badge">{scanCount > 99 ? '99+' : scanCount}</span>}
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setFertilizerCalcOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">🧪</span> Fertilizer Calc
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setSoilCardOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">📄</span> Soil Card Reader
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setOutbreakRadarOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">🚨</span> Outbreak Radar
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setNdviOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">🛰️</span> Satellite NDVI
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setLedgerOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">💰</span> Farm Ledger
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setIrrigationOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">💧</span> Smart Irrigation
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setVoiceAssistantOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">🗣️</span> Voice AI Assistant
+            </button>
+            <button className="mobile-menu-item" onClick={() => { setPresentationOpen(true); setMobileMenuOpen(false); }}>
+              <span className="mm-icon">📊</span> App Overview
+            </button>
+          </div>
+        </div>
+
+        <div className="mobile-menu-section">
+          <div className="mobile-menu-section-title">Account</div>
+          <div className="mobile-menu-grid">
+            {user ? (
+              <>
+                <button className="mobile-menu-item" style={{ gridColumn: '1 / -1', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '13px' }}>👤 {userLabel}</span>
+                </button>
+                <button className="mobile-menu-item" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>
+                  <span className="mm-icon">🚪</span> Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="mobile-menu-item" onClick={() => { setAuthMode('login'); setMobileMenuOpen(false); }}>
+                  <span className="mm-icon">🔑</span> Login
+                </button>
+                <button className="mobile-menu-item" onClick={() => { setAuthMode('signup'); setMobileMenuOpen(false); }}>
+                  <span className="mm-icon">📝</span> Sign Up
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="mobile-menu-section">
+          <div className="mobile-menu-section-title">Settings</div>
+          <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ marginBottom: '12px' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '8px' }}>🌐 Language</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {LANGUAGES.map(l => (
+                  <button
+                    key={l.code}
+                    type="button"
+                    className={`hub-lang-pill ${language === l.code ? 'active' : ''}`}
+                    onClick={() => handleLanguageChange(l.code)}
+                    style={{ padding: '4px 10px', fontSize: '12px', borderRadius: '8px' }}
+                  >
+                    {l.flag} {l.native.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '8px' }}>🎨 Theme</span>
+              <div className="hub-theme-selector" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                <button type="button" onClick={() => setTheme('dark-slate')} className={`hub-theme-dot theme-slate ${theme === 'dark-slate' ? 'active' : ''}`} title="Night Slate" />
+                <button type="button" onClick={() => setTheme('forest-green')} className={`hub-theme-dot theme-forest ${theme === 'forest-green' ? 'active' : ''}`} title="Forest Green" />
+                <button type="button" onClick={() => setTheme('warm-clay')} className={`hub-theme-dot theme-clay ${theme === 'warm-clay' ? 'active' : ''}`} title="Warm Clay" />
+                <button type="button" onClick={() => setTheme('deep-ocean')} className={`hub-theme-dot theme-ocean ${theme === 'deep-ocean' ? 'active' : ''}`} title="Deep Ocean" />
+                <button type="button" onClick={() => setTheme('carbon-gray')} className={`hub-theme-dot theme-carbon ${theme === 'carbon-gray' ? 'active' : ''}`} title="Carbon Gray" />
+                <button type="button" onClick={() => setTheme('midnight-navy')} className={`hub-theme-dot theme-navy ${theme === 'midnight-navy' ? 'active' : ''}`} title="Midnight Navy" />
+                <button type="button" onClick={() => setTheme('cyber-purple')} className={`hub-theme-dot theme-purple ${theme === 'cyber-purple' ? 'active' : ''}`} title="Cyber Purple" />
+                <button type="button" onClick={() => setTheme('crimson-rust')} className={`hub-theme-dot theme-rust ${theme === 'crimson-rust' ? 'active' : ''}`} title="Crimson Rust" />
+                <button type="button" onClick={() => setTheme('pure-white')} className={`hub-theme-dot theme-white ${theme === 'pure-white' ? 'active' : ''}`} title="Formal White" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ── Scan History Panel ── */}
       <ScanHistory
@@ -2876,6 +3029,99 @@ export default function App() {
       <GlobalAIChatModal
         language={activeLang}
         scanContext={result ? `${result.plant?.common_name || 'Plant'} (${result.plant?.scientific_name || ''}): ${result.health?.disease || 'Healthy'}. Recommendation: ${result.recommendation || ''}` : ''}
+      />
+
+      {/* ── BOTTOM NAVIGATION BAR (mobile only, hidden on desktop via CSS) ── */}
+      <nav className="bottom-nav">
+        <button
+          className={`bottom-nav-item ${authMode === 'main' && !marketOpen && !rotationOpen && !result && !loading ? 'bnav-active' : ''}`}
+          onClick={() => { setMarketOpen(false); setRotationOpen(false); resetForm(); setAuthMode('main'); setMobileMenuOpen(false); }}
+        >
+          <span className="bnav-icon">🏠</span>
+          <span className="bnav-label">Home</span>
+        </button>
+
+        <button
+          className={`bottom-nav-item ${gardenOpen ? 'bnav-active' : ''}`}
+          onClick={() => { if (!requireAuthForFeature()) return; setGardenOpen(true); setMobileMenuOpen(false); }}
+        >
+          <span className="bnav-icon">🚜</span>
+          <span className="bnav-label">Farm</span>
+        </button>
+
+        <button
+          className="bottom-nav-item bnav-scan"
+          onClick={() => {
+            if (!requireAuthForFeature()) return;
+            setMarketOpen(false);
+            setRotationOpen(false);
+            setAuthMode('main');
+            setMobileMenuOpen(false);
+            if (result) resetForm();
+          }}
+        >
+          <span className="bnav-icon">📷</span>
+          <span className="bnav-label">Scan</span>
+        </button>
+
+        <button
+          className={`bottom-nav-item ${marketOpen ? 'bnav-active' : ''}`}
+          onClick={() => { if (!requireAuthForFeature()) return; setMarketOpen(true); setRotationOpen(false); setMobileMenuOpen(false); }}
+        >
+          <span className="bnav-icon">📈</span>
+          <span className="bnav-label">Mandi</span>
+        </button>
+
+        <button
+          className="bottom-nav-item"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{ position: 'relative' }}
+        >
+          <span className="bnav-icon">{mobileMenuOpen ? '✕' : '☰'}</span>
+          <span className="bnav-label">More</span>
+        </button>
+      </nav>
+
+      {/* ── Fertilizer & Chemical Dosage Calculator Modal ── */}
+      <FertilizerCalculatorModal
+        open={fertilizerCalcOpen}
+        onClose={() => setFertilizerCalcOpen(false)}
+      />
+
+      {/* ── Soil Health Card Reader Modal ── */}
+      <SoilCardScannerModal
+        open={soilCardOpen}
+        onClose={() => setSoilCardOpen(false)}
+      />
+
+      {/* ── Disease Outbreak Radar Modal ── */}
+      <OutbreakRadarModal
+        open={outbreakRadarOpen}
+        onClose={() => setOutbreakRadarOpen(false)}
+      />
+
+      {/* ── Satellite NDVI Canopy Monitor Modal ── */}
+      <NDVIMapModal
+        open={ndviOpen}
+        onClose={() => setNdviOpen(false)}
+      />
+
+      {/* ── Farm Expense & Profit Ledger Modal ── */}
+      <FarmLedgerModal
+        open={ledgerOpen}
+        onClose={() => setLedgerOpen(false)}
+      />
+
+      {/* ── AI Irrigation Scheduler Modal ── */}
+      <IrrigationSchedulerModal
+        open={irrigationOpen}
+        onClose={() => setIrrigationOpen(false)}
+      />
+
+      {/* ── Voice Assistant Modal ── */}
+      <VoiceAssistantModal
+        open={voiceAssistantOpen}
+        onClose={() => setVoiceAssistantOpen(false)}
       />
     </div>
   )

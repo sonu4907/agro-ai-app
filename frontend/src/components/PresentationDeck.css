@@ -1708,3 +1708,134 @@
     position: relative !important;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE-FIRST OVERRIDES — PresentationDeck
+   ══════════════════════════════════════════════════════════ */
+
+/* Mobile: make slides fit phone screen */
+.ppt-toolbar {
+  padding: 6px 10px !important;
+  gap: 4px !important;
+  flex-wrap: wrap !important;
+}
+.ppt-toolbar button {
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+  min-height: 32px !important;
+}
+.ppt-slide-container {
+  padding: 12px !important;
+}
+.ppt-slide-inner {
+  padding: 16px !important;
+  border-radius: 16px !important;
+  overflow-y: auto !important;
+  max-height: calc(100vh - 140px) !important;
+}
+.ppt-slide-title {
+  font-size: 20px !important;
+  line-height: 1.2 !important;
+}
+.ppt-slide-subtitle {
+  font-size: 13px !important;
+}
+.ppt-nav-prev,
+.ppt-nav-next {
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 16px !important;
+}
+.ppt-slide-counter {
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+.ppt-dots {
+  gap: 4px !important;
+}
+.ppt-dot {
+  width: 6px !important;
+  height: 6px !important;
+}
+/* Content grids inside slides */
+.prob-cards-grid,
+.sol-orbit,
+.tech-arch-cols,
+.biz-cards-grid,
+.timeline-nodes,
+.roi-grid {
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+.prob-card,
+.sol-node,
+.tech-info-card,
+.biz-card,
+.roi-card {
+  padding: 12px !important;
+  border-radius: 12px !important;
+  font-size: 13px !important;
+}
+.sol-orbit {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+.sol-center-node {
+  width: 100% !important;
+  height: auto !important;
+  border-radius: 14px !important;
+  padding: 14px !important;
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+}
+/* Glow elements - reduce on mobile */
+.ppt-glow-1, .ppt-glow-2 {
+  width: 200px !important;
+  height: 200px !important;
+  filter: blur(60px) !important;
+}
+/* Timeline horizontal scroll */
+.timeline-nodes {
+  display: flex !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  gap: 8px !important;
+  padding-bottom: 8px !important;
+}
+.timeline-nodes::-webkit-scrollbar { display: none !important; }
+.timeline-node {
+  min-width: 80px !important;
+  flex-shrink: 0 !important;
+}
+.timeline-details {
+  padding: 12px !important;
+}
+/* Sandbox panel */
+.sandbox-panel {
+  padding: 12px !important;
+}
+.sandbox-panel input,
+.sandbox-panel select {
+  font-size: 13px !important;
+}
+
+/* Tablet+ restore */
+@media (min-width: 768px) {
+  .ppt-slide-inner {
+    padding: 40px !important;
+    max-height: none !important;
+  }
+  .ppt-slide-title {
+    font-size: clamp(28px, 4vw, 48px) !important;
+  }
+  .prob-cards-grid,
+  .biz-cards-grid,
+  .roi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  }
+}

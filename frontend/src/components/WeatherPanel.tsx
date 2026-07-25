@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { getApiUrl } from '../services/apiConfig'
 import { fetchWeatherRiskReport, reverseGeocode } from '../weatherService'
 import type { WeatherRiskReport, DiseaseRisk } from '../weatherService'
 import type { RiskLevel } from '../weatherService'
@@ -138,7 +139,7 @@ export default function WeatherPanel({ language: _language }: { language: string
       localStorage.setItem('agro_weather_location', query)
       
       try {
-        await fetch("/api/v1/garden/weather", {
+        await fetch(getApiUrl("/api/v1/garden/weather"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
