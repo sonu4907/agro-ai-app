@@ -918,9 +918,22 @@ interface CircularGaugeProps {
   color: string
   icon: string
   statusText?: string
+  sparklinePoints?: string
+  normalRange?: string
 }
 
-function CircularGauge({ value, min = 0, max = 100, unit, label, color, icon, statusText }: CircularGaugeProps) {
+function CircularGauge({
+  value,
+  min = 0,
+  max = 100,
+  unit,
+  label,
+  color,
+  icon,
+  statusText,
+  sparklinePoints = "M 0 18 Q 15 8 30 15 T 60 10 T 90 20 T 120 14",
+  normalRange
+}: CircularGaugeProps) {
   const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
   const radius = 38
   const circumference = 2 * Math.PI * radius
@@ -952,9 +965,18 @@ function CircularGauge({ value, min = 0, max = 100, unit, label, color, icon, st
           </span>
         </div>
       </div>
+
       <div className="skeuo-gauge-label">
         <strong>{label}</strong>
         {statusText && <span className="skeuo-gauge-status" style={{ color: color }}>● {statusText}</span>}
+        {normalRange && <span className="gauge-normal-range">Target: {normalRange}</span>}
+      </div>
+
+      {/* 📈 Live Real-time Sparkline Graph associated with Current Value */}
+      <div className="gauge-sparkline-container">
+        <svg viewBox="0 0 120 30" preserveAspectRatio="none" className="gauge-sparkline-svg">
+          <path d={sparklinePoints} fill="none" stroke={color} strokeWidth="2" style={{ filter: `drop-shadow(0 0 4px ${color})` }} />
+        </svg>
       </div>
     </div>
   )
@@ -1272,7 +1294,7 @@ function Dashboard({
             <h3 className="section-title">Live Sensor Readings</h3>
           </div>
 
-          <div className="garden-metric-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
+          <div className="garden-metric-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '14px' }}>
             {/* Soil Moisture Circular Dial */}
             <CircularGauge
               value={telemetry ? telemetry.soil_moisture : 42}
@@ -1281,6 +1303,8 @@ function Dashboard({
               color="#22c55e"
               icon="💧"
               statusText={telemetry && telemetry.soil_moisture < 30 ? "LOW" : "OPTIMAL"}
+              normalRange="40% - 70%"
+              sparklinePoints="M 0 22 Q 20 8 40 20 T 80 10 T 120 16"
             />
 
             {/* Reservoir Water Tank Level Dial */}
@@ -1291,6 +1315,8 @@ function Dashboard({
               color="#38bdf8"
               icon="🛢️"
               statusText="NORMAL"
+              normalRange="50% - 100%"
+              sparklinePoints="M 0 10 Q 30 25 60 12 T 90 18 T 120 8"
             />
 
             {/* Nitrogen Circular Dial */}
@@ -1303,6 +1329,8 @@ function Dashboard({
               color="#f97316"
               icon="🌿"
               statusText="HEALTHY"
+              normalRange="50 - 150 ppm"
+              sparklinePoints="M 0 15 Q 25 5 50 25 T 90 12 T 120 18"
             />
 
             {/* Phosphorus Circular Dial */}
@@ -1315,6 +1343,8 @@ function Dashboard({
               color="#eab308"
               icon="🔬"
               statusText="BALANCED"
+              normalRange="30 - 90 ppm"
+              sparklinePoints="M 0 25 Q 15 12 45 6 T 85 22 T 120 10"
             />
 
             {/* Potassium Circular Dial */}
@@ -1327,6 +1357,8 @@ function Dashboard({
               color="#bd00ff"
               icon="⚡"
               statusText="OPTIMAL"
+              normalRange="120 - 250 ppm"
+              sparklinePoints="M 0 12 Q 20 24 50 8 T 95 18 T 120 14"
             />
 
             {/* Soil pH Circular Dial */}
@@ -1339,6 +1371,8 @@ function Dashboard({
               color="#22d3ee"
               icon="🧪"
               statusText="NEUTRAL"
+              normalRange="6.0 - 7.5 pH"
+              sparklinePoints="M 0 16 Q 30 10 60 20 T 90 12 T 120 15"
             />
           </div>
 
