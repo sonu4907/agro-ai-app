@@ -168,14 +168,16 @@ def parse_json_tool_call(text: str) -> Optional[Dict[str, Any]]:
 
 async def call_farmer_chat(
     message: str,
-    language: str,
-    history: List[Dict[str, str]],
+    language: str = "english",
+    history: Optional[List[Dict[str, str]]] = None,
     scan_context: str = ""
 ) -> str:
     """
     Enterprise-Grade Agentic Assistant with Gemini Tool Function Calling.
     Executes actual farm actions and synthesizes clear bilingual answers.
     """
+    if history is None:
+        history = []
     lang_rule = LANGUAGE_RULES.get(language.lower(), LANGUAGE_RULES["english"])
     system_content = SYSTEM_PROMPT + f"\n\nLANGUAGE RULE: {lang_rule}"
 
