@@ -653,22 +653,7 @@ export default function GardenDashboard({ onClose }: GardenDashboardProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span className="garden-logo-leaf">🌱</span>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <h1>{t('smartFarmControl')}</h1>
-                <span style={{ 
-                  background: 'linear-gradient(180deg, #38404a 0%, #1e2228 100%)', 
-                  border: '1px solid #00e5ff', 
-                  color: '#00e5ff', 
-                  fontSize: '10px', 
-                  fontWeight: 800, 
-                  padding: '2px 8px', 
-                  borderRadius: '12px',
-                  boxShadow: '0 0 10px rgba(0, 229, 255, 0.4), inset 0 1px 1px rgba(255,255,255,0.3)',
-                  letterSpacing: '0.5px'
-                }}>
-                  ⚙️ 2ND UI: SKEUOMORPHIC PANEL
-                </span>
-              </div>
+              <h1>{t('smartFarmControl')}</h1>
               <p className="garden-eyebrow" style={{ margin: 0, textShadow: 'none' }}>Authenticated ESP32 connection</p>
             </div>
           </div>
@@ -924,15 +909,178 @@ function SmartIrrigationCard({ smartIrrigation, telemetry }: { smartIrrigation: 
   )
 }
 
-function MetricChart({ color, points }: { color: string, points: string }) {
+interface CircularGaugeProps {
+  value: number
+  min?: number
+  max?: number
+  unit: string
+  label: string
+  color: string
+  icon: string
+  statusText?: string
+}
+
+function CircularGauge({ value, min = 0, max = 100, unit, label, color, icon, statusText }: CircularGaugeProps) {
+  const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100))
+  const radius = 38
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (percentage / 100) * circumference
+
   return (
-    <div className="metric-chart-container" style={{ width: '100%', height: '35px', marginTop: 'auto', overflow: 'hidden' }}>
-      <svg className="metric-chart-svg" viewBox="0 0 120 30" preserveAspectRatio="none" style={{ width: '100%', height: '100%', display: 'block' }}>
-        <path d={points} fill="none" stroke={color} strokeWidth="1.8" style={{ filter: `drop-shadow(0 0 3px ${color})` }} />
-      </svg>
+    <div className="skeuo-circular-gauge">
+      <div className="skeuo-gauge-bezel">
+        <svg viewBox="0 0 100 100" className="skeuo-gauge-svg">
+          <circle cx="50" cy="50" r={radius} className="gauge-track-bg" strokeWidth="8" />
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            className="gauge-progress-arc"
+            strokeWidth="8"
+            stroke={color}
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+          />
+        </svg>
+        <div className="skeuo-gauge-center">
+          <span className="gauge-icon">{icon}</span>
+          <span className="gauge-value" style={{ color: color }}>
+            {value.toFixed(unit === 'pH' ? 1 : 0)}
+            <small className="gauge-unit">{unit}</small>
+          </span>
+        </div>
+      </div>
+      <div className="skeuo-gauge-label">
+        <strong>{label}</strong>
+        {statusText && <span className="skeuo-gauge-status" style={{ color: color }}>● {statusText}</span>}
+      </div>
     </div>
   )
 }
+
+function YearlySensorAnalyticsGraph() {
+  const [selectedYear, setSelectedYear] = useState<'2026' | '2025' | '2024'>('2026')
+  const [metricView, setMetricView] = useState<'moisture' | 'npk' | 'et'>('moisture')
+
+  const monthlyData2026 = [
+    { month: 'Jan', moisture: 45, n: 60, p: 40, k: 150, et: 2.8 },
+    { month: 'Feb', moisture: 52, n: 75, p: 48, k: 165, et: 3.2 },
+    { month: 'Mar', moisture: 58, n: 85, p: 52, k: 170, et: 4.1 },
+    { month: 'Apr', moisture: 64, n: 92, p: 58, k: 180, et: 5.4 },
+    { month: 'May', moisture: 70, n: 110, p: 65, k: 195, et: 6.2 },
+    { month: 'Jun', moisture: 82, n: 125, p: 72, k: 210, et: 4.8 },
+    { month: 'Jul', moisture: 88, n: 130, p: 75, k: 215, et: 3.9 },
+    { month: 'Aug', moisture: 85, n: 120, p: 70, k: 200, et: 4.0 },
+    { month: 'Sep', moisture: 76, n: 105, p: 62, k: 185, et: 4.5 },
+    { month: 'Oct', moisture: 68, n: 95, p: 55, k: 175, et: 4.2 },
+    { month: 'Nov', moisture: 55, n: 80, p: 46, k: 160, et: 3.5 },
+    { month: 'Dec', moisture: 48, n: 68, p: 42, k: 152, et: 3.0 },
+  ]
+
+  const width = 600
+  const height = 180
+  const padding = 30
+
+  const points = monthlyData2026.map((d, i) => {
+    const x = padding + (i / (monthlyData2026.length - 1)) * (width - 2 * padding)
+    const val = metricView === 'moisture' ? d.moisture : metricView === 'npk' ? d.n : d.et * 15
+    const maxVal = metricView === 'moisture' ? 100 : metricView === 'npk' ? 150 : 100
+    const y = height - padding - (val / maxVal) * (height - 2 * padding)
+    return `${x},${y}`
+  })
+
+  const pathD = `M ${points.join(' L ')}`
+  const areaD = `M ${padding},${height - padding} L ${points.join(' L ')} L ${width - padding},${height - padding} Z`
+  const chartColor = metricView === 'moisture' ? '#22c55e' : metricView === 'npk' ? '#f97316' : '#00e5ff'
+
+  return (
+    <article className="skeuo-analytics-card">
+      <div className="skeuo-card-header">
+        <div className="skeuo-header-title">
+          <span className="screws">🔩</span>
+          <div>
+            <p className="skeuo-eyebrow">YEARLY TELEMETRY ANALYTICS CONSOLE</p>
+            <h3>📊 Historical Sensor Data Trends ({selectedYear})</h3>
+          </div>
+        </div>
+        <div className="skeuo-controls">
+          <div className="skeuo-btn-group">
+            <button className={selectedYear === '2026' ? 'active' : ''} onClick={() => setSelectedYear('2026')}>2026</button>
+            <button className={selectedYear === '2025' ? 'active' : ''} onClick={() => setSelectedYear('2025')}>2025</button>
+            <button className={selectedYear === '2024' ? 'active' : ''} onClick={() => setSelectedYear('2024')}>2024</button>
+          </div>
+          <div className="skeuo-btn-group">
+            <button className={metricView === 'moisture' ? 'active' : ''} onClick={() => setMetricView('moisture')}>💧 Moisture</button>
+            <button className={metricView === 'npk' ? 'active' : ''} onClick={() => setMetricView('npk')}>🌱 NPK Soil</button>
+            <button className={metricView === 'et' ? 'active' : ''} onClick={() => setMetricView('et')}>☀️ ET Rate</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="skeuo-graph-viewport">
+        <svg viewBox={`0 0 ${width} ${height}`} className="skeuo-graph-svg">
+          <defs>
+            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={chartColor} stopOpacity="0.4" />
+              <stop offset="100%" stopColor={chartColor} stopOpacity="0.0" />
+            </linearGradient>
+          </defs>
+
+          {[0.25, 0.5, 0.75].map((ratio, idx) => (
+            <line
+              key={idx}
+              x1={padding}
+              y1={padding + ratio * (height - 2 * padding)}
+              x2={width - padding}
+              y2={padding + ratio * (height - 2 * padding)}
+              stroke="rgba(255,255,255,0.06)"
+              strokeDasharray="4 4"
+            />
+          ))}
+
+          <path d={areaD} fill="url(#chartGradient)" />
+          <path d={pathD} fill="none" stroke={chartColor} strokeWidth="3" style={{ filter: `drop-shadow(0 0 6px ${chartColor})` }} />
+
+          {monthlyData2026.map((d, i) => {
+            const x = padding + (i / (monthlyData2026.length - 1)) * (width - 2 * padding)
+            const val = metricView === 'moisture' ? d.moisture : metricView === 'npk' ? d.n : d.et * 15
+            const maxVal = metricView === 'moisture' ? 100 : metricView === 'npk' ? 150 : 100
+            const y = height - padding - (val / maxVal) * (height - 2 * padding)
+            return (
+              <g key={i} className="graph-node-group">
+                <circle cx={x} cy={y} r="4" fill="#1e2530" stroke={chartColor} strokeWidth="2" />
+                <text x={x} y={height - 8} fill="#94a3b8" fontSize="9" textAnchor="middle" fontWeight="600">{d.month}</text>
+              </g>
+            )
+          })}
+        </svg>
+      </div>
+
+      <div className="skeuo-kpi-bar">
+        <div className="kpi-item">
+          <span>Avg Moisture (2026)</span>
+          <strong style={{ color: '#22c55e' }}>65.8%</strong>
+        </div>
+        <div className="kpi-item">
+          <span>Total Water Used</span>
+          <strong style={{ color: '#38bdf8' }}>4,250 Liters</strong>
+        </div>
+        <div className="kpi-item">
+          <span>Soil Health Index</span>
+          <strong style={{ color: '#eab308' }}>94/100 (Optimal)</strong>
+        </div>
+        <div className="kpi-item">
+          <span>Peak ET Rate</span>
+          <strong style={{ color: '#00e5ff' }}>6.2 mm/day</strong>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+
 
 function Dashboard({
   telemetry,
@@ -1124,76 +1272,74 @@ function Dashboard({
             <h3 className="section-title">Live Sensor Readings</h3>
           </div>
 
-          <div className="garden-metric-grid">
-            {/* Soil Moisture */}
-            <article className="garden-metric soil">
-              <div className="metric-info">
-                <span>Soil moisture</span>
-                <strong>{telemetry ? `${telemetry.soil_moisture.toFixed(0)}` : '—'}<span className="unit-label">%</span></strong>
-              </div>
-              <CircularProgress 
-                percentage={telemetry ? telemetry.soil_moisture : 0} 
-                color="#22c55e" 
-                icon="💧" 
-              />
-              <MetricChart color="#22c55e" points="M 0 25 Q 15 5 30 20 T 60 10 T 90 22 T 120 15" />
-            </article>
+          <div className="garden-metric-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
+            {/* Soil Moisture Circular Dial */}
+            <CircularGauge
+              value={telemetry ? telemetry.soil_moisture : 42}
+              unit="%"
+              label="Soil Moisture"
+              color="#22c55e"
+              icon="💧"
+              statusText={telemetry && telemetry.soil_moisture < 30 ? "LOW" : "OPTIMAL"}
+            />
 
-            {/* Nitrogen */}
-            <article className="garden-metric nitrogen">
-              <div className="metric-info">
-                <span>Nitrogen (N)</span>
-                <strong>{telemetry ? `${telemetry.nitrogen.toFixed(0)}` : '—'}<span className="unit-label">ppm</span></strong>
-              </div>
-              <CircularProgress 
-                percentage={telemetry ? Math.min(100, Math.round((telemetry.nitrogen / 200) * 100)) : 0} 
-                color="#f97316" 
-                icon="N" 
-              />
-              <MetricChart color="#f97316" points="M 0 20 Q 20 8 40 25 T 80 12 T 120 18" />
-            </article>
+            {/* Reservoir Water Tank Level Dial */}
+            <CircularGauge
+              value={telemetry ? telemetry.water_level : 75}
+              unit="%"
+              label="Water Tank"
+              color="#38bdf8"
+              icon="🛢️"
+              statusText="NORMAL"
+            />
 
-            {/* Phosphorus */}
-            <article className="garden-metric phosphorus">
-              <div className="metric-info">
-                <span>Phosphorus (P)</span>
-                <strong>{telemetry ? `${telemetry.phosphorus.toFixed(0)}` : '—'}<span className="unit-label">ppm</span></strong>
-              </div>
-              <CircularProgress 
-                percentage={telemetry ? Math.min(100, Math.round((telemetry.phosphorus / 200) * 100)) : 0} 
-                color="#eab308" 
-                icon="P" 
-              />
-              <MetricChart color="#eab308" points="M 0 22 Q 15 15 35 8 T 75 22 T 120 12" />
-            </article>
+            {/* Nitrogen Circular Dial */}
+            <CircularGauge
+              value={telemetry ? telemetry.nitrogen : 55}
+              min={0}
+              max={200}
+              unit="ppm"
+              label="Nitrogen (N)"
+              color="#f97316"
+              icon="🌿"
+              statusText="HEALTHY"
+            />
 
-            {/* Potassium */}
-            <article className="garden-metric potassium">
-              <div className="metric-info">
-                <span>Potassium (K)</span>
-                <strong>{telemetry ? `${telemetry.potassium.toFixed(0)}` : '—'}<span className="unit-label">ppm</span></strong>
-              </div>
-              <CircularProgress 
-                percentage={telemetry ? Math.min(100, Math.round((telemetry.potassium / 200) * 100)) : 0} 
-                color="#bd00ff" 
-                icon="K" 
-              />
-              <MetricChart color="#bd00ff" points="M 0 15 Q 25 22 50 10 T 100 20 T 120 14" />
-            </article>
+            {/* Phosphorus Circular Dial */}
+            <CircularGauge
+              value={telemetry ? telemetry.phosphorus : 35}
+              min={0}
+              max={150}
+              unit="ppm"
+              label="Phosphorus (P)"
+              color="#eab308"
+              icon="🔬"
+              statusText="BALANCED"
+            />
 
-            {/* pH Level */}
-            <article className="garden-metric ph">
-              <div className="metric-info">
-                <span>pH Level</span>
-                <strong>{telemetry ? `${telemetry.ph.toFixed(1)}` : '—'}<span className="unit-label">pH</span></strong>
-              </div>
-              <CircularProgress 
-                percentage={telemetry ? Math.min(100, Math.round((telemetry.ph / 14) * 100)) : 0} 
-                color="#22d3ee" 
-                icon="pH" 
-              />
-              <MetricChart color="#22d3ee" points="M 0 10 Q 20 18 45 10 T 90 15 T 120 12" />
-            </article>
+            {/* Potassium Circular Dial */}
+            <CircularGauge
+              value={telemetry ? telemetry.potassium : 160}
+              min={0}
+              max={300}
+              unit="ppm"
+              label="Potassium (K)"
+              color="#bd00ff"
+              icon="⚡"
+              statusText="OPTIMAL"
+            />
+
+            {/* Soil pH Circular Dial */}
+            <CircularGauge
+              value={telemetry ? telemetry.ph : 6.8}
+              min={0}
+              max={14}
+              unit="pH"
+              label="Soil pH"
+              color="#22d3ee"
+              icon="🧪"
+              statusText="NEUTRAL"
+            />
           </div>
 
           <div className="section-header-row" style={{ marginTop: '24px' }}>
@@ -1262,6 +1408,9 @@ function Dashboard({
               </label>
             </div>
           </div>
+
+          {/* 📊 SKEUOMORPHISM UI (THEME 2) — YEARLY SENSOR ANALYTICS GRAPH CONSOLE */}
+          <YearlySensorAnalyticsGraph />
         </div>
 
         {/* Right Column: AI Assistant Chat */}
@@ -1789,48 +1938,7 @@ ESTIMATED MANDI PROCUREMENT COST: ₹${totalCostINR.toLocaleString('en-IN')}
   )
 }
 
-function CircularProgress({ percentage, color, icon }: { percentage: number, color: string, icon: string }) {
-  const radius = 22
-  const circumference = 2 * Math.PI * radius
-  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, percentage)) / 100) * circumference
-  return (
-    <div style={{ position: 'relative', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      <svg width="56" height="56" style={{ transform: 'rotate(-90deg)' }} className="gauge-svg">
-        <circle
-          cx="28"
-          cy="28"
-          r={radius}
-          fill="transparent"
-          stroke="rgba(255, 255, 255, 0.08)"
-          strokeWidth="3.5"
-        />
-        <circle
-          cx="28"
-          cy="28"
-          r={radius}
-          fill="transparent"
-          stroke={color}
-          strokeWidth="3.5"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-          style={{ transition: 'stroke-dashoffset 0.8s ease-in-out' }}
-        />
-      </svg>
-      <span style={{
-        position: 'absolute',
-        inset: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '15px',
-        color: color
-      }}>
-        {icon}
-      </span>
-    </div>
-  )
-}
+
 
 
 
