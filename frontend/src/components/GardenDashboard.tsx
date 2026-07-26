@@ -7,7 +7,7 @@ import { collection, addDoc, deleteDoc, doc, getDocs, onSnapshot, query, orderBy
 import { db } from '../firebase'
 
 type GardenDashboardProps = { onClose: () => void }
-type Page = 'dashboard' | 'controls' | 'assistant' | 'notifications'
+type Page = 'sensors' | 'calculator' | 'assistant' | 'irrigation' | 'notifications'
 type Telemetry = {
   water_level: number
   soil_moisture: number
@@ -43,7 +43,7 @@ const getGardenApi = () => getApiUrl('/api/v1/garden')
 
 export default function GardenDashboard({ onClose }: GardenDashboardProps) {
   const [token, setToken] = useState<string | null>('bypass-token')
-  const [page, setPage] = useState<Page>('dashboard')
+  const [page, setPage] = useState<Page>('sensors')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [telemetry, setTelemetry] = useState<Telemetry | null>(null)
@@ -667,10 +667,21 @@ export default function GardenDashboard({ onClose }: GardenDashboardProps) {
             <button className="garden-close neon-btn-close" onClick={onClose}>Back to Plant Medic</button>
           </div>
         </div>
-        <nav className="garden-tabs">
-          <button className={page === 'dashboard' ? 'active' : ''} onClick={() => setPage('dashboard')}>{t('liveDashboard')}</button>
+        <nav className="garden-tabs farm-subpage-nav">
+          <button className={page === 'sensors' ? 'active' : ''} onClick={() => setPage('sensors')}>
+            <span>📊</span> Live Sensors & 2026 Graph
+          </button>
+          <button className={page === 'calculator' ? 'active' : ''} onClick={() => setPage('calculator')}>
+            <span>🧪</span> Fertilizer Calculator
+          </button>
+          <button className={page === 'assistant' ? 'active' : ''} onClick={() => setPage('assistant')}>
+            <span>🤖</span> Garden AI Assistant
+          </button>
+          <button className={page === 'irrigation' ? 'active' : ''} onClick={() => setPage('irrigation')}>
+            <span>🌧️</span> Weather & Irrigation
+          </button>
           <button className={page === 'notifications' ? 'active' : ''} onClick={() => setPage('notifications')}>
-            {t('notifications')} {alerts.filter(a => !a.resolved).length > 0 && (
+            <span>🔔</span> Alerts {alerts.filter(a => !a.resolved).length > 0 && (
               <span className="tab-badge">{alerts.filter(a => !a.resolved).length}</span>
             )}
           </button>
@@ -699,8 +710,9 @@ export default function GardenDashboard({ onClose }: GardenDashboardProps) {
         </div>
 
         {notice && <div className="garden-notice">{notice}</div>}
-        {page === 'dashboard' && (
+        {page !== 'notifications' && (
           <Dashboard 
+            page={page}
             telemetry={telemetry} 
             smartIrrigation={smartIrrigation} 
             updatedAt={updatedAt} 
@@ -1105,6 +1117,7 @@ function YearlySensorAnalyticsGraph() {
 
 
 function Dashboard({
+  page,
   telemetry,
   smartIrrigation,
   updatedAt,
@@ -1115,6 +1128,7 @@ function Dashboard({
   setQuestion,
   askAssistant
 }: {
+  page: Page
   telemetry: Telemetry | null
   smartIrrigation: SmartIrrigation | null
   updatedAt: string | null
@@ -1286,273 +1300,315 @@ function Dashboard({
         );
       })()}
 
-      <div className="garden-dashboard-main-layout">
-        {/* Left Column: Live readings & controls */}
-        <div className="garden-dashboard-left-panel">
-          <div className="section-header-row">
-            <span className="section-eyebrow">Realtime Telemetry</span>
-            <h3 className="section-title">Live Sensor Readings</h3>
-          </div>
+      {/* 📊 PAGE 1: LIVE SENSOR READINGS & 2026 ANALYTICS GRAPH */}
+      {page === 'sensors' && (
+        <>
+          <div className="garden-dashboard-main-layout" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="garden-dashboard-left-panel" style={{ width: '100%' }}>
+              <div className="section-header-row">
+                <span className="section-eyebrow" style={{ fontSize: '13px', fontWeight: 800 }}>REALTIME SENSOR TELEMETRY</span>
+                <h2 className="section-title" style={{ fontSize: '24px', fontWeight: 900 }}>📊 Live Sensor Readings & Gauges</h2>
+              </div>
 
-          <div className="garden-metric-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '14px' }}>
-            {/* Soil Moisture Circular Dial */}
-            <CircularGauge
-              value={telemetry ? telemetry.soil_moisture : 42}
-              unit="%"
-              label="Soil Moisture"
-              color="#22c55e"
-              icon="💧"
-              statusText={telemetry && telemetry.soil_moisture < 30 ? "LOW" : "OPTIMAL"}
-              normalRange="40% - 70%"
-              sparklinePoints="M 0 22 Q 20 8 40 20 T 80 10 T 120 16"
-            />
+              <div className="garden-metric-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px' }}>
+                {/* Soil Moisture Circular Dial */}
+                <CircularGauge
+                  value={telemetry ? telemetry.soil_moisture : 42}
+                  unit="%"
+                  label="Soil Moisture"
+                  color="#22c55e"
+                  icon="💧"
+                  statusText={telemetry && telemetry.soil_moisture < 30 ? "LOW" : "OPTIMAL"}
+                  normalRange="40% - 70%"
+                  sparklinePoints="M 0 22 Q 20 8 40 20 T 80 10 T 120 16"
+                />
 
-            {/* Reservoir Water Tank Level Dial */}
-            <CircularGauge
-              value={telemetry ? telemetry.water_level : 75}
-              unit="%"
-              label="Water Tank"
-              color="#38bdf8"
-              icon="🛢️"
-              statusText="NORMAL"
-              normalRange="50% - 100%"
-              sparklinePoints="M 0 10 Q 30 25 60 12 T 90 18 T 120 8"
-            />
+                {/* Reservoir Water Tank Level Dial */}
+                <CircularGauge
+                  value={telemetry ? telemetry.water_level : 75}
+                  unit="%"
+                  label="Water Tank"
+                  color="#38bdf8"
+                  icon="🛢️"
+                  statusText="NORMAL"
+                  normalRange="50% - 100%"
+                  sparklinePoints="M 0 10 Q 30 25 60 12 T 90 18 T 120 8"
+                />
 
-            {/* Nitrogen Circular Dial */}
-            <CircularGauge
-              value={telemetry ? telemetry.nitrogen : 55}
-              min={0}
-              max={200}
-              unit="ppm"
-              label="Nitrogen (N)"
-              color="#f97316"
-              icon="🌿"
-              statusText="HEALTHY"
-              normalRange="50 - 150 ppm"
-              sparklinePoints="M 0 15 Q 25 5 50 25 T 90 12 T 120 18"
-            />
+                {/* Nitrogen Circular Dial */}
+                <CircularGauge
+                  value={telemetry ? telemetry.nitrogen : 55}
+                  min={0}
+                  max={200}
+                  unit="ppm"
+                  label="Nitrogen (N)"
+                  color="#f97316"
+                  icon="🌿"
+                  statusText="HEALTHY"
+                  normalRange="50 - 150 ppm"
+                  sparklinePoints="M 0 15 Q 25 5 50 25 T 90 12 T 120 18"
+                />
 
-            {/* Phosphorus Circular Dial */}
-            <CircularGauge
-              value={telemetry ? telemetry.phosphorus : 35}
-              min={0}
-              max={150}
-              unit="ppm"
-              label="Phosphorus (P)"
-              color="#eab308"
-              icon="🔬"
-              statusText="BALANCED"
-              normalRange="30 - 90 ppm"
-              sparklinePoints="M 0 25 Q 15 12 45 6 T 85 22 T 120 10"
-            />
+                {/* Phosphorus Circular Dial */}
+                <CircularGauge
+                  value={telemetry ? telemetry.phosphorus : 35}
+                  min={0}
+                  max={150}
+                  unit="ppm"
+                  label="Phosphorus (P)"
+                  color="#eab308"
+                  icon="🔬"
+                  statusText="BALANCED"
+                  normalRange="30 - 90 ppm"
+                  sparklinePoints="M 0 25 Q 15 12 45 6 T 85 22 T 120 10"
+                />
 
-            {/* Potassium Circular Dial */}
-            <CircularGauge
-              value={telemetry ? telemetry.potassium : 160}
-              min={0}
-              max={300}
-              unit="ppm"
-              label="Potassium (K)"
-              color="#bd00ff"
-              icon="⚡"
-              statusText="OPTIMAL"
-              normalRange="120 - 250 ppm"
-              sparklinePoints="M 0 12 Q 20 24 50 8 T 95 18 T 120 14"
-            />
+                {/* Potassium Circular Dial */}
+                <CircularGauge
+                  value={telemetry ? telemetry.potassium : 160}
+                  min={0}
+                  max={300}
+                  unit="ppm"
+                  label="Potassium (K)"
+                  color="#bd00ff"
+                  icon="⚡"
+                  statusText="OPTIMAL"
+                  normalRange="120 - 250 ppm"
+                  sparklinePoints="M 0 12 Q 20 24 50 8 T 95 18 T 120 14"
+                />
 
-            {/* Soil pH Circular Dial */}
-            <CircularGauge
-              value={telemetry ? telemetry.ph : 6.8}
-              min={0}
-              max={14}
-              unit="pH"
-              label="Soil pH"
-              color="#22d3ee"
-              icon="🧪"
-              statusText="NEUTRAL"
-              normalRange="6.0 - 7.5 pH"
-              sparklinePoints="M 0 16 Q 30 10 60 20 T 90 12 T 120 15"
-            />
-          </div>
+                {/* Soil pH Circular Dial */}
+                <CircularGauge
+                  value={telemetry ? telemetry.ph : 6.8}
+                  min={0}
+                  max={14}
+                  unit="pH"
+                  label="Soil pH"
+                  color="#22d3ee"
+                  icon="🧪"
+                  statusText="NEUTRAL"
+                  normalRange="6.0 - 7.5 pH"
+                  sparklinePoints="M 0 16 Q 30 10 60 20 T 90 12 T 120 15"
+                />
+              </div>
 
-          <div className="section-header-row" style={{ marginTop: '24px' }}>
-            <span className="section-eyebrow">Relayed Command Triggers</span>
-            <h3 className="section-title">System Controls</h3>
-          </div>
+              <div className="section-header-row" style={{ marginTop: '28px' }}>
+                <span className="section-eyebrow" style={{ fontSize: '13px', fontWeight: 800 }}>HARDWARE COMMAND TRIGGERS</span>
+                <h2 className="section-title" style={{ fontSize: '24px', fontWeight: 900 }}>⚡ System Controls & Relays</h2>
+              </div>
 
-          <div className="system-controls-row">
-            {/* Water Pump Switch Toggle */}
-            <div className={`system-control-btn-card ${telemetry?.pump_on ? 'active' : ''}`}>
-              <div className="control-btn-icon-label">
-                <span className="control-icon-circle green">💧</span>
-                <div className="control-label-col">
-                  <strong>Water Pump</strong>
-                  <span>{telemetry?.pump_on ? 'Active' : 'Standby'}</span>
+              <div className="system-controls-row">
+                {/* Water Pump Switch Toggle */}
+                <div className={`system-control-btn-card ${telemetry?.pump_on ? 'active' : ''}`}>
+                  <div className="control-btn-icon-label">
+                    <span className="control-icon-circle green">💧</span>
+                    <div className="control-label-col">
+                      <strong style={{ fontSize: '16px' }}>Water Pump</strong>
+                      <span style={{ fontSize: '13px' }}>{telemetry?.pump_on ? 'Active' : 'Standby'}</span>
+                    </div>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={telemetry?.pump_on ?? false} 
+                      disabled={busy || !telemetry}
+                      onChange={() => sendCommand('pump', !telemetry?.pump_on)} 
+                    />
+                    <span className="toggle-slider green-glow" />
+                  </label>
+                </div>
+
+                {/* Grow Lights Switch Toggle */}
+                <div className={`system-control-btn-card ${telemetry?.grow_lights_on ? 'active' : ''}`}>
+                  <div className="control-btn-icon-label">
+                    <span className="control-icon-circle orange">☀️</span>
+                    <div className="control-label-col">
+                      <strong style={{ fontSize: '16px' }}>Grow Lights</strong>
+                      <span style={{ fontSize: '13px' }}>{telemetry?.grow_lights_on ? 'Active' : 'Standby'}</span>
+                    </div>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={telemetry?.grow_lights_on ?? false} 
+                      disabled={busy || !telemetry}
+                      onChange={() => sendCommand('grow_lights', !telemetry?.grow_lights_on)} 
+                    />
+                    <span className="toggle-slider orange-glow" />
+                  </label>
+                </div>
+
+                {/* Automated mode Toggle */}
+                <div className={`system-control-btn-card ${telemetry?.auto_mode ? 'active' : ''}`}>
+                  <div className="control-btn-icon-label">
+                    <span className="control-icon-circle blue">🤖</span>
+                    <div className="control-label-col">
+                      <strong style={{ fontSize: '16px' }}>Automated Care</strong>
+                      <span style={{ fontSize: '13px' }}>{telemetry?.auto_mode ? 'Active' : 'Manual Override'}</span>
+                    </div>
+                  </div>
+                  <label className="toggle-switch">
+                    <input 
+                      type="checkbox" 
+                      checked={telemetry?.auto_mode ?? false} 
+                      disabled={busy || !telemetry}
+                      onChange={() => sendCommand('auto_mode', !telemetry?.auto_mode)} 
+                    />
+                    <span className="toggle-slider blue-glow" />
+                  </label>
                 </div>
               </div>
-              <label className="toggle-switch">
-                <input 
-                  type="checkbox" 
-                  checked={telemetry?.pump_on ?? false} 
-                  disabled={busy || !telemetry}
-                  onChange={() => sendCommand('pump', !telemetry?.pump_on)} 
-                />
-                <span className="toggle-slider green-glow" />
-              </label>
-            </div>
 
-            {/* Grow Lights Switch Toggle */}
-            <div className={`system-control-btn-card ${telemetry?.grow_lights_on ? 'active' : ''}`}>
-              <div className="control-btn-icon-label">
-                <span className="control-icon-circle orange">☀️</span>
-                <div className="control-label-col">
-                  <strong>Grow Lights</strong>
-                  <span>{telemetry?.grow_lights_on ? 'Active' : 'Standby'}</span>
-                </div>
-              </div>
-              <label className="toggle-switch">
-                <input 
-                  type="checkbox" 
-                  checked={telemetry?.grow_lights_on ?? false} 
-                  disabled={busy || !telemetry}
-                  onChange={() => sendCommand('grow_lights', !telemetry?.grow_lights_on)} 
-                />
-                <span className="toggle-slider orange-glow" />
-              </label>
-            </div>
-
-            {/* Automated mode Toggle */}
-            <div className={`system-control-btn-card ${telemetry?.auto_mode ? 'active' : ''}`}>
-              <div className="control-btn-icon-label">
-                <span className="control-icon-circle blue">🤖</span>
-                <div className="control-label-col">
-                  <strong>Automated Care</strong>
-                  <span>{telemetry?.auto_mode ? 'Active' : 'Manual Override'}</span>
-                </div>
-              </div>
-              <label className="toggle-switch">
-                <input 
-                  type="checkbox" 
-                  checked={telemetry?.auto_mode ?? false} 
-                  disabled={busy || !telemetry}
-                  onChange={() => sendCommand('auto_mode', !telemetry?.auto_mode)} 
-                />
-                <span className="toggle-slider blue-glow" />
-              </label>
+              {/* 📊 SKEUOMORPHISM UI (THEME 2) — YEARLY SENSOR ANALYTICS GRAPH CONSOLE */}
+              <YearlySensorAnalyticsGraph />
             </div>
           </div>
+        </>
+      )}
 
-          {/* 📊 SKEUOMORPHISM UI (THEME 2) — YEARLY SENSOR ANALYTICS GRAPH CONSOLE */}
-          <YearlySensorAnalyticsGraph />
+      {/* 🧪 PAGE 2: FERTILIZER CALCULATOR & NPK DIAGNOSIS */}
+      {page === 'calculator' && (
+        <div style={{ marginTop: '16px' }}>
+          {telemetry && (
+            <article className="garden-card fertilizer-recs" style={{ marginTop: '0', marginBottom: '24px', textAlign: 'left', padding: '24px' }}>
+              <p className="garden-eyebrow" style={{ fontSize: '13px' }}>AgroAI Soil Nutrient Diagnosis</p>
+              <h2 style={{ marginBottom: '16px', fontSize: '24px', fontWeight: 900 }}>🔬 AI Fertilizer & NPK Recommendations</h2>
+              {getFertilizerAdvice(telemetry).length > 0 ? (
+                <div style={{ display: 'grid', gap: '14px' }}>
+                  {getFertilizerAdvice(telemetry).map((adv, idx) => (
+                    <div key={idx} style={{
+                      padding: '18px',
+                      borderRadius: '14px',
+                      borderLeft: `5px solid ${adv.status === 'danger' ? '#ef4444' : '#eab308'}`,
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                        <strong style={{ fontSize: '16px', color: adv.status === 'danger' ? '#fca5a5' : '#fef08a' }}>{adv.nutrient}</strong>
+                        <span style={{
+                          fontSize: '13px',
+                          padding: '4px 12px',
+                          borderRadius: '999px',
+                          background: adv.status === 'danger' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(234, 179, 8, 0.2)',
+                          color: adv.status === 'danger' ? '#f87171' : '#facc15',
+                          fontWeight: 800
+                        }}>
+                          {adv.quantity}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#cbd5e1', lineHeight: '1.5' }}>{adv.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  padding: '18px',
+                  borderRadius: '14px',
+                  borderLeft: '5px solid #22c55e',
+                  background: 'rgba(34, 197, 94, 0.08)',
+                  color: '#a7f3d0',
+                  fontSize: '15px'
+                }}>
+                  ✅ <strong>All soil parameters are balanced!</strong> Soil NPK levels and pH are optimal. No fertilizer adjustment is needed. Keep up the good farming practices!
+                </div>
+              )}
+            </article>
+          )}
+
+          <FertilizerDosageCalculator telemetry={telemetry} />
         </div>
+      )}
 
-        {/* Right Column: AI Assistant Chat */}
-        <div className="garden-dashboard-right-panel">
-          <div className="garden-card garden-ai-chat-card">
-            <div className="chat-card-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div className="chat-ai-avatar">🤖</div>
+      {/* 🤖 PAGE 3: GARDEN AI ASSISTANT (CHATBOT) */}
+      {page === 'assistant' && (
+        <div className="garden-dashboard-right-panel" style={{ width: '100%', marginTop: '16px' }}>
+          <div className="garden-card garden-ai-chat-card" style={{ width: '100%', minHeight: '560px', padding: '24px' }}>
+            <div className="chat-card-header" style={{ paddingBottom: '16px', marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div className="chat-ai-avatar" style={{ width: '48px', height: '48px', fontSize: '24px' }}>🤖</div>
                 <div className="chat-ai-title-desc">
-                  <strong>Garden AI Assistant</strong>
-                  <span className="chat-status-pulse"><span className="chat-pulse-dot" /> Online</span>
+                  <strong style={{ fontSize: '20px', color: '#fff' }}>Krishak AI Garden Assistant</strong>
+                  <span className="chat-status-pulse" style={{ fontSize: '13px' }}><span className="chat-pulse-dot" /> Online • Bilingual Farmer AI</span>
                 </div>
               </div>
             </div>
 
-            <div className="chat-messages-area">
+            {/* Quick Suggestion Chips */}
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', marginBottom: '12px' }}>
+              {['💧 Should I water now?', '🧪 Check NPK soil dosage', '🌾 Wheat rotation advice', '🐛 Leaf spot diagnosis'].map((chip, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setQuestion(chip)}
+                  style={{
+                    background: 'rgba(56, 189, 248, 0.1)',
+                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    color: '#7dd3fc',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    padding: '6px 14px',
+                    borderRadius: '999px',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+
+            <div className="chat-messages-area" style={{ minHeight: '340px', padding: '16px', fontSize: '15px' }}>
               {messages.map((msg, idx) => (
                 <div key={idx} className={`chat-bubble-row ${msg.sender === 'user' ? 'msg-user' : 'msg-ai'}`}>
                   {msg.sender === 'assistant' && (
-                    <div className="chat-avatar-circle">🤖</div>
+                    <div className="chat-avatar-circle" style={{ width: '38px', height: '38px', fontSize: '18px' }}>🤖</div>
                   )}
                   <div className="chat-bubble-container">
                     <div className="chat-bubble-meta">
-                      <span className="chat-sender">{msg.sender === 'user' ? 'Farmer' : 'Garden AI'}</span>
-                      <span className="chat-time">{msg.time}</span>
+                      <span className="chat-sender" style={{ fontSize: '13px', fontWeight: 800 }}>{msg.sender === 'user' ? 'Farmer' : 'Garden AI'}</span>
+                      <span className="chat-time" style={{ fontSize: '11px' }}>{msg.time}</span>
                     </div>
-                    <div className="chat-bubble-text">{msg.text}</div>
+                    <div className="chat-bubble-text" style={{ fontSize: '15px', lineHeight: '1.6' }}>{msg.text}</div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <form className="chat-input-form" onSubmit={askAssistant}>
+            <form className="chat-input-form" onSubmit={askAssistant} style={{ marginTop: '16px' }}>
               <button 
                 type="button" 
                 className={`chat-mic-btn ${listening ? 'listening' : ''}`}
                 onClick={toggleMicListening}
                 title={listening ? 'Listening to voice...' : 'Click to Speak'}
+                style={{ width: '46px', height: '46px', fontSize: '20px' }}
               >
                 {listening ? '🎙️' : '🎤'}
               </button>
               <input 
                 value={question} 
                 onChange={e => setQuestion(e.target.value)} 
-                placeholder={listening ? 'Listening...' : 'Type or click mic to speak...'} 
+                placeholder={listening ? 'Listening...' : 'Ask Krishak AI anything about your crops...'} 
                 disabled={busy} 
+                style={{ fontSize: '15px', padding: '12px 18px' }}
               />
-              <button type="submit" className="chat-send-btn" disabled={busy || !question.trim()}>
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <button type="submit" className="chat-send-btn" disabled={busy || !question.trim()} style={{ width: '46px', height: '46px' }}>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
                   <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                 </svg>
               </button>
             </form>
           </div>
         </div>
-      </div>
-
-      <SmartIrrigationCard smartIrrigation={smartIrrigation} telemetry={telemetry} />
-
-      {telemetry && (
-        <article className="garden-card fertilizer-recs" style={{ marginTop: '20px', textAlign: 'left' }}>
-          <p className="garden-eyebrow">AgroAI Soil Nutrient Diagnosis</p>
-          <h2 style={{ marginBottom: '16px' }}>🔬 AI Fertilizer & NPK Recommendations</h2>
-          {getFertilizerAdvice(telemetry).length > 0 ? (
-            <div style={{ display: 'grid', gap: '12px' }}>
-              {getFertilizerAdvice(telemetry).map((adv, idx) => (
-                <div key={idx} style={{
-                  padding: '16px',
-                  borderRadius: '12px',
-                  borderLeft: `4px solid ${adv.status === 'danger' ? '#ef4444' : '#eab308'}`,
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '6px'
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
-                    <strong style={{ color: adv.status === 'danger' ? '#fca5a5' : '#fef08a' }}>{adv.nutrient}</strong>
-                    <span style={{
-                      fontSize: '12px',
-                      padding: '2px 8px',
-                      borderRadius: '999px',
-                      background: adv.status === 'danger' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(234, 179, 8, 0.15)',
-                      color: adv.status === 'danger' ? '#f87171' : '#facc15',
-                      fontWeight: 800
-                    }}>
-                      {adv.quantity}
-                    </span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: '13px', color: '#cbd5e1' }}>{adv.reason}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{
-              padding: '16px',
-              borderRadius: '12px',
-              borderLeft: '4px solid #22c55e',
-              background: 'rgba(34, 197, 94, 0.05)',
-              color: '#a7f3d0',
-              fontSize: '14px'
-            }}>
-              ✅ <strong>All soil parameters are balanced!</strong> Soil NPK levels and pH are optimal. No fertilizer adjustment is needed. Keep up the good farming practices!
-            </div>
-          )}
-        </article>
       )}
 
-      <FertilizerDosageCalculator telemetry={telemetry} />
+      {/* 🌧️ PAGE 4: WEATHER & SMART IRRIGATION SCHEDULER */}
+      {page === 'irrigation' && (
+        <div style={{ marginTop: '16px' }}>
+          <SmartIrrigationCard smartIrrigation={smartIrrigation} telemetry={telemetry} />
+        </div>
+      )}
     </>
   )
 }
