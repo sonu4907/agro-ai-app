@@ -46,11 +46,25 @@ export function AuthProvider({
         emailVerified: true,
       } as any;
     }
+    const backup = localStorage.getItem("agroai_session_user");
+    if (backup) {
+      try {
+        const parsed = JSON.parse(backup);
+        return {
+          uid: parsed.uid || "local-user-id",
+          email: parsed.email || "",
+          displayName: parsed.displayName || "AgroAI User",
+          emailVerified: true,
+        } as any;
+      } catch (e) {
+        // ignore invalid json
+      }
+    }
     return null;
   });
   const [loading, setLoading] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('demo') === 'true' || window.location.hash === '#demo') {
+    if (params.get('demo') === 'true' || window.location.hash === '#demo' || localStorage.getItem("agroai_session_user")) {
       return false;
     }
     return true;
@@ -66,7 +80,10 @@ export function AuthProvider({
 
     const unsubscribe = onAuthStateChanged(auth, async currentUser => {
       if (!currentUser) {
-        setUser(null);
+        const backup = localStorage.getItem("agroai_session_user");
+        if (!backup) {
+          setUser(null);
+        }
         setLoading(false);
         return;
       }
@@ -79,7 +96,7 @@ export function AuthProvider({
         if (userExists) {
           setUser(currentUser);
         } else {
-          // Auto-provision Firestore record if it doesn't exist to prevent race conditions (especially with Google login)
+          // Auto-provision Firestore record if it doesn't exist
           const name = currentUser.displayName || currentUser.email?.split("@")[0] || "User";
           await setDoc(doc(db, "users", currentUser.uid), {
             uid: currentUser.uid,
@@ -89,12 +106,11 @@ export function AuthProvider({
             emailVerified: currentUser.emailVerified,
             createdAt: serverTimestamp(),
             lastLoginAt: serverTimestamp(),
-          });
+          }, { merge: true });
           setUser(currentUser);
         }
       } catch (e) {
-        console.error('Error validating/creating signed-in user:', e);
-        // Fallback to setting user to avoid locking them out if Firestore rules or connections are flaky
+        console.error('Error validating signed-in user:', e);
         setUser(currentUser);
       } finally {
         setLoading(false);
@@ -105,7 +121,9 @@ export function AuthProvider({
   }, []);
 
   async function logout() {
+    localStorage.removeItem("agroai_session_user");
     await signOut(auth);
+    setUser(null);
   }
 
   function loginAsDemo() {
