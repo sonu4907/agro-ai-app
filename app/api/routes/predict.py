@@ -1,4 +1,6 @@
+from typing import Optional
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi.datastructures import UploadFile as FastAPIUploadFile
 
 from app.services.prediction_service import predict_plant_disease
 from app.schemas.prediction import AgroAIResponse
@@ -9,13 +11,15 @@ router = APIRouter()
 @router.post("/", response_model=AgroAIResponse)
 async def predict(
     image: UploadFile = File(...),
-    language: str = Form("english")
+    language: Optional[str] = Form(default="english")
 ):
     """
     Upload a plant image and analyze it using AgroAI.
+    Accepts both standard form field `language` and a fallback `language` string from mobile apps.
     """
     try:
-        result = await predict_plant_disease(image, language)
+        normalized_language = (language or "english").strip() or "english"
+        result = await predict_plant_disease(image, normalized_language)
         return result
     except ValueError as e:
         raise HTTPException(

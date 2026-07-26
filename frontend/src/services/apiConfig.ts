@@ -20,14 +20,13 @@ export const getApiBaseUrl = (): string => {
     return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
   }
 
-  // 3. Fallback for mobile native app execution
+  // 3. Fallback for mobile native app execution — always use Render production backend
   if (isCapacitorNative()) {
-    // 10.0.2.2 points to localhost host PC in Android Emulator
-    return 'http://10.0.2.2:8000';
+    return 'https://agro-ai-ml-service.onrender.com';
   }
 
-  // 4. Fallback for standard web browser (relative path using Vite dev server proxy)
-  return '';
+  // 4. Fallback for standard web browser — use the same Render deployment when no local override is set
+  return 'https://agro-ai-ml-service.onrender.com';
 };
 
 /**
