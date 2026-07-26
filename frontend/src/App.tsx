@@ -292,6 +292,7 @@ export default function App() {
   const [featuresTabOpen, setFeaturesTabOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [fertilizerCalcOpen, setFertilizerCalcOpen] = useState(false);
+  const [homeTab, setHomeTab] = useState<'scanner' | 'farm' | 'advisory' | 'schemes' | 'ledger'>('scanner');
   const [soilCardOpen, setSoilCardOpen] = useState(false);
   const [outbreakRadarOpen, setOutbreakRadarOpen] = useState(false);
   const [ndviOpen, setNdviOpen] = useState(false);
@@ -2300,7 +2301,59 @@ export default function App() {
       {authMode !== 'main' && authContent}
       {authMode === 'main' && (
         <main className="main-wrap">
-          {marketOpen ? (
+          {/* ╔══════════════════════════════════════════════════════════════════════════╗
+             ║ DEDICATED HOMEPAGE SUB-PAGE NAVIGATION BUTTONS                           ║
+             ╚══════════════════════════════════════════════════════════════════════════╝ */}
+          <nav className="homepage-subpage-nav">
+            <button className={homeTab === 'scanner' ? 'active' : ''} onClick={() => { setHomeTab('scanner'); setMarketOpen(false); setRotationOpen(false); }}>
+              <span>🌿</span> Plant Medic & Scanner
+            </button>
+            <button className={homeTab === 'farm' ? 'active' : ''} onClick={() => { setHomeTab('farm'); setGardenOpen(true); }}>
+              <span>🌱</span> Smart Farm Dashboard
+            </button>
+            <button className={homeTab === 'advisory' ? 'active' : ''} onClick={() => { setHomeTab('advisory'); setMarketOpen(true); }}>
+              <span>🌾</span> Mandi Rates & Rotation
+            </button>
+            <button className={homeTab === 'schemes' ? 'active' : ''} onClick={() => { setHomeTab('schemes'); setMarketOpen(false); setRotationOpen(false); }}>
+              <span>📜</span> Govt Schemes & Subsidy
+            </button>
+            <button className={homeTab === 'ledger' ? 'active' : ''} onClick={() => { setHomeTab('ledger'); setMarketOpen(false); setRotationOpen(false); }}>
+              <span>📊</span> Soil Cards & Ledger
+            </button>
+          </nav>
+
+          {homeTab === 'schemes' ? (
+            <div style={{ marginTop: '20px' }}>
+              <GovernmentSchemes
+                opts={{
+                  plantName: result?.plant?.common_name || 'General Crop',
+                  disease: result?.health?.disease || '',
+                  isHealthy: result?.health?.is_healthy ?? true,
+                  cropType: result?.plant?.crop_type || '',
+                  severity: result?.health?.severity || '',
+                  language,
+                }}
+              />
+            </div>
+          ) : homeTab === 'ledger' ? (
+            <div style={{ marginTop: '20px', display: 'grid', gap: '20px' }}>
+              <div className="card-glass-panel" style={{ padding: '24px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <h2 style={{ fontSize: '24px', color: '#38bdf8', marginBottom: '12px' }}>🧪 Soil Health Card & NPK Ledger</h2>
+                <p style={{ color: '#cbd5e1', fontSize: '15px', marginBottom: '20px' }}>Scan your Govt Soil Health Card or calculate exact fertilizer dosages for your land.</p>
+                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                  <button onClick={() => setSoilCardOpen(true)} style={{ padding: '14px 22px', fontSize: '15px', fontWeight: 800, background: '#10b981', color: '#fff', border: 'none', borderRadius: '14px', cursor: 'pointer' }}>
+                    📷 Scan Soil Card (OCR)
+                  </button>
+                  <button onClick={() => setFertilizerCalcOpen(true)} style={{ padding: '14px 22px', fontSize: '15px', fontWeight: 800, background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '14px', cursor: 'pointer' }}>
+                    🧪 Fertilizer Calculator
+                  </button>
+                  <button onClick={() => setLedgerOpen(true)} style={{ padding: '14px 22px', fontSize: '15px', fontWeight: 800, background: '#f59e0b', color: '#0f172a', border: 'none', borderRadius: '14px', cursor: 'pointer' }}>
+                    📜 Farm Expense Ledger
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : marketOpen ? (
             <MarketPrices language={language} onClose={() => setMarketOpen(false)} />
           ) : rotationOpen ? (
             <CropRotation language={language} onClose={() => setRotationOpen(false)} />

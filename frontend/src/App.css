@@ -4,6 +4,67 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║ DEDICATED HOMEPAGE SUB-PAGE NAVIGATION BUTTONS & LARGE TYPOGRAPHY        ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+
+.homepage-subpage-nav {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin: 16px 0 28px 0 !important;
+  padding: 8px !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  border-radius: 20px !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.homepage-subpage-nav button {
+  flex: 1 1 190px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  padding: 15px 22px !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important;
+  background: linear-gradient(145deg, #1e293b, #0f172a) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 
+    4px 4px 12px rgba(0, 0, 0, 0.4),
+    -2px -2px 8px rgba(255, 255, 255, 0.04) !important;
+}
+
+.homepage-subpage-nav button span {
+  font-size: 20px !important;
+}
+
+.homepage-subpage-nav button:hover {
+  color: #fff !important;
+  background: linear-gradient(145deg, #334155, #1e293b) !important;
+  transform: translateY(-2px) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+.homepage-subpage-nav button.active {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #0284c7, #0369a1) !important;
+  border-color: rgba(56, 189, 248, 0.8) !important;
+  box-shadow: 
+    0 0 20px rgba(56, 189, 248, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4) !important;
+  transform: scale(1.02) !important;
+}
+
 /* ── Reset ───────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
