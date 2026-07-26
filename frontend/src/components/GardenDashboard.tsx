@@ -653,7 +653,22 @@ export default function GardenDashboard({ onClose }: GardenDashboardProps) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span className="garden-logo-leaf">🌱</span>
             <div>
-              <h1>{t('smartFarmControl')}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h1>{t('smartFarmControl')}</h1>
+                <span style={{ 
+                  background: 'linear-gradient(180deg, #38404a 0%, #1e2228 100%)', 
+                  border: '1px solid #00e5ff', 
+                  color: '#00e5ff', 
+                  fontSize: '10px', 
+                  fontWeight: 800, 
+                  padding: '2px 8px', 
+                  borderRadius: '12px',
+                  boxShadow: '0 0 10px rgba(0, 229, 255, 0.4), inset 0 1px 1px rgba(255,255,255,0.3)',
+                  letterSpacing: '0.5px'
+                }}>
+                  ⚙️ 2ND UI: SKEUOMORPHIC PANEL
+                </span>
+              </div>
               <p className="garden-eyebrow" style={{ margin: 0, textShadow: 'none' }}>Authenticated ESP32 connection</p>
             </div>
           </div>
