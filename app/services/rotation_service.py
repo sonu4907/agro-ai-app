@@ -120,14 +120,12 @@ async def recommend_crop_rotation(req: RotationRequest) -> RotationResponse:
         f"- Previous Crop: {req.previous_crop}\n"
     )
 
-    # Check for direct Gemini API key (GEMINI_ROTATION_API_KEY -> GEMINI_API_KEY -> OPENROUTER_API_KEY)
-    gemini_key = settings.GEMINI_ROTATION_API_KEY or settings.GEMINI_API_KEY
-    if not gemini_key and settings.OPENROUTER_API_KEY and (settings.OPENROUTER_API_KEY.startswith("AIzaSy") or not settings.OPENROUTER_API_KEY.startswith("sk-or-v1-")):
-        gemini_key = settings.OPENROUTER_API_KEY
+    # Check for direct Gemini API key
+    gemini_key = settings.get_gemini_key("ROTATION")
 
-    if gemini_key and gemini_key != "replace_with_openrouter_key":
+    if gemini_key:
         logger.info("GEMINI_API_KEY detected. Using direct Google Gemini API for Crop Rotation.")
-        direct_models = ["gemini-flash-latest", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
+        direct_models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-flash-latest"]
         for direct_model in direct_models:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{direct_model}:generateContent?key={gemini_key}"
             payload = {

@@ -187,14 +187,12 @@ async def call_farmer_chat(
         messages.append({"role": h["role"], "content": h["content"]})
     messages.append({"role": "user", "content": message})
 
-    # Detect Google Gemini API key (GEMINI_CHAT_API_KEY -> GEMINI_API_KEY -> OPENROUTER_API_KEY)
-    gemini_key = settings.GEMINI_CHAT_API_KEY or settings.GEMINI_API_KEY
-    if not gemini_key and settings.OPENROUTER_API_KEY and (settings.OPENROUTER_API_KEY.startswith("AIzaSy") or not settings.OPENROUTER_API_KEY.startswith("sk-or-v1-")):
-        gemini_key = settings.OPENROUTER_API_KEY
+    # Detect Google Gemini API key
+    gemini_key = settings.get_gemini_key("CHAT")
 
-    if gemini_key and gemini_key != "replace_with_openrouter_key":
+    if gemini_key:
         logger.info("Direct Gemini API key detected for Agentic Assistant.")
-        direct_models = ["gemini-flash-latest", "gemini-2.0-flash-lite", "gemini-2.0-flash"]
+        direct_models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-flash-latest"]
         for direct_model in direct_models:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{direct_model}:generateContent?key={gemini_key}"
             

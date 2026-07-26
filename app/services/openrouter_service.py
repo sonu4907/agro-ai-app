@@ -74,17 +74,16 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
 
     full_prompt = AGROAI_PROMPT + language_instruction
 
-    # Resolve direct Gemini API Key (GEMINI_SCAN_API_KEY -> GEMINI_API_KEY -> OPENROUTER_API_KEY)
-    gemini_key = settings.GEMINI_SCAN_API_KEY or settings.GEMINI_API_KEY
-    if not gemini_key and settings.OPENROUTER_API_KEY and (settings.OPENROUTER_API_KEY.startswith("AIzaSy") or not settings.OPENROUTER_API_KEY.startswith("sk-or-v1-")):
-        gemini_key = settings.OPENROUTER_API_KEY
+    # Resolve direct Gemini API Key
+    gemini_key = settings.get_gemini_key("SCAN")
 
-    if gemini_key and gemini_key != "replace_with_openrouter_key":
-        logger.info("Direct Gemini API key detected. Attempting direct Google endpoints...")
+    if gemini_key:
+        logger.info("Direct Gemini API key detected for Plant Medic Scan.")
         direct_models = [
-            "gemini-flash-latest",
+            "gemini-1.5-flash",
+            "gemini-2.0-flash",
             "gemini-2.0-flash-lite",
-            "gemini-2.0-flash"
+            "gemini-flash-latest"
         ]
         for direct_model in direct_models:
             logger.info(f"Trying direct Gemini model: {direct_model}...")

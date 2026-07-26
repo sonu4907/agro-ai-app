@@ -1,3 +1,4 @@
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -33,6 +34,30 @@ class Settings(BaseSettings):
         env_file=".env",
         extra="ignore"
     )
+
+    def get_gemini_key(self, purpose: str = "SCAN") -> str:
+        """
+        Robust key resolver that checks dedicated purpose key, fallback GEMINI_API_KEY,
+        and system os.environ with stripped whitespace.
+        """
+        purpose_upper = purpose.upper()
+        
+        # 1. Dedicated purpose key (e.g. GEMINI_SCAN_API_KEY)
+        key = getattr(self, f"GEMINI_{purpose_upper}_API_KEY", "") or os.getenv(f"GEMINI_{purpose_upper}_API_KEY", "")
+        if key and key.strip() and key.strip() != "replace_with_openrouter_key":
+            return key.strip()
+
+        # 2. Main fallback GEMINI_API_KEY
+        key = self.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
+        if key and key.strip() and key.strip() != "replace_with_openrouter_key":
+            return key.strip()
+
+        # 3. OpenRouter key if formatted as direct Google AI key (AIzaSy...)
+        key = self.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")
+        if key and key.strip().startswith("AIzaSy"):
+            return key.strip()
+
+        return ""
 
 
 settings = Settings()
