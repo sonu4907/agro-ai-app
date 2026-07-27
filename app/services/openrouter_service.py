@@ -147,6 +147,8 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
 
         for or_model in openrouter_models:
             logger.info(f"Trying OpenRouter model: {or_model}...")
+            # Free tier models don't support response_format; paid models do
+            is_free_model = ":free" in or_model
             payload = {
                 "model": or_model,
                 "messages": [
@@ -158,9 +160,11 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
                         ]
                     }
                 ],
-                "response_format": {"type": "json_object"},
-                "max_tokens": 800
+                "max_tokens": 700  # Kept under free credit limit (~743 tokens available)
             }
+            # Only add response_format for paid models (gemini-2.5-flash without :free suffix)
+            if not is_free_model:
+                payload["response_format"] = {"type": "json_object"}
             try:
                 async with httpx.AsyncClient(timeout=60.0) as client:
                     response = await client.post(OPENROUTER_URL, headers=headers, json=payload)
