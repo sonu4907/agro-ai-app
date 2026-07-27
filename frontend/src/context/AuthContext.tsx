@@ -15,6 +15,7 @@ import type { User } from "firebase/auth";
 import { auth } from "../firebase";
 import { db } from "../firebase";
 import { getDoc, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { completeGoogleRedirectSignIn } from "../services/authService";
 
 interface AuthContextType {
   user: User | null;
@@ -36,9 +37,8 @@ export function AuthProvider({
   children: ReactNode;
 }) {
   const [user, setUser] = useState<User | null>(() => {
-    // Synchronously check URL/hash to avoid flash and delay in headless testing
     const params = new URLSearchParams(window.location.search);
-    if (params.get('demo') === 'true' || window.location.hash === '#demo') {
+    if (params.get("demo") === "true" || window.location.hash === "#demo") {
       return {
         uid: "demo-user-id",
         email: "demo@agroai.com",
@@ -46,6 +46,7 @@ export function AuthProvider({
         emailVerified: true,
       } as any;
     }
+
     const backup = localStorage.getItem("agroai_session_user");
     if (backup) {
       try {
@@ -56,68 +57,97 @@ export function AuthProvider({
           displayName: parsed.displayName || "AgroAI User",
           emailVerified: true,
         } as any;
-      } catch (e) {
+      } catch {
         // ignore invalid json
       }
     }
     return null;
   });
+
   const [loading, setLoading] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('demo') === 'true' || window.location.hash === '#demo' || localStorage.getItem("agroai_session_user")) {
+    if (
+      params.get("demo") === "true" ||
+      window.location.hash === "#demo" ||
+      localStorage.getItem("agroai_session_user")
+    ) {
       return false;
     }
     return true;
   });
 
   useEffect(() => {
-    // If in demo mode, skip firebase auth listener to keep mock user active
     const params = new URLSearchParams(window.location.search);
-    if (params.get('demo') === 'true' || window.location.hash === '#demo') {
+    if (params.get("demo") === "true" || window.location.hash === "#demo") {
       setLoading(false);
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async currentUser => {
-      if (!currentUser) {
-        const backup = localStorage.getItem("agroai_session_user");
-        if (!backup) {
-          setUser(null);
-        }
-        setLoading(false);
-        return;
-      }
+    let active = true;
 
-      setLoading(true);
+    const finalizeAuth = async () => {
       try {
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        const userExists = userDoc.exists();
+        const redirectedUser = await completeGoogleRedirectSignIn();
+        if (!active) return;
 
-        if (userExists) {
-          setUser(currentUser);
-        } else {
-          // Auto-provision Firestore record if it doesn't exist
-          const name = currentUser.displayName || currentUser.email?.split("@")[0] || "User";
-          await setDoc(doc(db, "users", currentUser.uid), {
-            uid: currentUser.uid,
-            displayName: name,
-            email: currentUser.email || "",
-            provider: currentUser.providerData[0]?.providerId || "password",
-            emailVerified: currentUser.emailVerified,
-            createdAt: serverTimestamp(),
-            lastLoginAt: serverTimestamp(),
-          }, { merge: true });
-          setUser(currentUser);
+        if (redirectedUser) {
+          setUser(redirectedUser as any);
+          setLoading(false);
+          return;
         }
-      } catch (e) {
-        console.error('Error validating signed-in user:', e);
-        setUser(currentUser);
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error("Failed to finalize Google redirect sign-in:", error);
       }
-    });
 
-    return unsubscribe;
+      const unsubscribe = onAuthStateChanged(auth, async currentUser => {
+        if (!active) return;
+
+        if (!currentUser) {
+          const backup = localStorage.getItem("agroai_session_user");
+          if (!backup) {
+            setUser(null);
+          }
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        try {
+          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          const userExists = userDoc.exists();
+
+          if (userExists) {
+            setUser(currentUser);
+          } else {
+            const name = currentUser.displayName || currentUser.email?.split("@")[0] || "User";
+            await setDoc(doc(db, "users", currentUser.uid), {
+              uid: currentUser.uid,
+              displayName: name,
+              email: currentUser.email || "",
+              provider: currentUser.providerData[0]?.providerId || "password",
+              emailVerified: currentUser.emailVerified,
+              createdAt: serverTimestamp(),
+              lastLoginAt: serverTimestamp(),
+            }, { merge: true });
+            setUser(currentUser);
+          }
+        } catch (e) {
+          console.error("Error validating signed-in user:", e);
+          setUser(currentUser);
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      return unsubscribe;
+    };
+
+    const cleanupPromise = finalizeAuth();
+
+    return () => {
+      active = false;
+      cleanupPromise.then(unsubscribe => unsubscribe && unsubscribe());
+    };
   }, []);
 
   async function logout() {

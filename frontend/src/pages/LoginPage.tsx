@@ -45,8 +45,10 @@ export default function LoginPage({ onSwitch }: LoginPageProps) {
               setErrorMsg(null);
               setLoading(true);
               try {
-                await googleLogin();
-                onSwitch("main");
+                const user = await googleLogin();
+                if (user) {
+                  onSwitch("main");
+                }
               } catch (error: any) {
                 setErrorMsg(error.message);
               } finally {

@@ -2302,28 +2302,28 @@ export default function App() {
       {authMode === 'main' && (
         <main className="main-wrap">
           {/* ╔══════════════════════════════════════════════════════════════════════════╗
-             ║ DEDICATED HOMEPAGE SUB-PAGE NAVIGATION BUTTONS                           ║
+             ║ DESKTOP ONLY: TOP HORIZONTAL SUB-PAGE NAV (hidden on mobile via CSS)     ║
              ╚══════════════════════════════════════════════════════════════════════════╝ */}
           <nav className="homepage-subpage-nav">
-            <button className={homeTab === 'scanner' ? 'active' : ''} onClick={() => { setHomeTab('scanner'); setMarketOpen(false); setRotationOpen(false); }}>
+            <button className={homeTab === 'scanner' ? 'active' : ''} onClick={() => { setHomeTab('scanner'); setMarketOpen(false); setRotationOpen(false); setGardenOpen(false); }}>
               <span>🌿</span> Plant Medic & Scanner
             </button>
-            <button className={homeTab === 'farm' ? 'active' : ''} onClick={() => { setHomeTab('farm'); setGardenOpen(true); }}>
+            <button className={homeTab === 'farm' ? 'active' : ''} onClick={() => { setHomeTab('farm'); setGardenOpen(true); setMarketOpen(false); }}>
               <span>🌱</span> Smart Farm Dashboard
             </button>
-            <button className={homeTab === 'advisory' ? 'active' : ''} onClick={() => { setHomeTab('advisory'); setMarketOpen(true); }}>
+            <button className={homeTab === 'advisory' ? 'active' : ''} onClick={() => { setHomeTab('advisory'); setMarketOpen(true); setGardenOpen(false); }}>
               <span>🌾</span> Mandi Rates & Rotation
             </button>
-            <button className={homeTab === 'schemes' ? 'active' : ''} onClick={() => { setHomeTab('schemes'); setMarketOpen(false); setRotationOpen(false); }}>
+            <button className={homeTab === 'schemes' ? 'active' : ''} onClick={() => { setHomeTab('schemes'); setMarketOpen(false); setRotationOpen(false); setGardenOpen(false); }}>
               <span>📜</span> Govt Schemes & Subsidy
             </button>
-            <button className={homeTab === 'ledger' ? 'active' : ''} onClick={() => { setHomeTab('ledger'); setMarketOpen(false); setRotationOpen(false); }}>
+            <button className={homeTab === 'ledger' ? 'active' : ''} onClick={() => { setHomeTab('ledger'); setMarketOpen(false); setRotationOpen(false); setGardenOpen(false); }}>
               <span>📊</span> Soil Cards & Ledger
             </button>
           </nav>
 
           {homeTab === 'schemes' ? (
-            <div style={{ marginTop: '20px' }}>
+            <div className="tab-screen">
               <GovernmentSchemes
                 opts={{
                   plantName: result?.plant?.common_name || 'General Crop',
@@ -2336,29 +2336,72 @@ export default function App() {
               />
             </div>
           ) : homeTab === 'ledger' ? (
-            <div style={{ marginTop: '20px', display: 'grid', gap: '20px' }}>
-              <div className="card-glass-panel" style={{ padding: '24px', background: 'rgba(15, 23, 42, 0.6)', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <h2 style={{ fontSize: '24px', color: '#38bdf8', marginBottom: '12px' }}>🧪 Soil Health Card & NPK Ledger</h2>
-                <p style={{ color: '#cbd5e1', fontSize: '15px', marginBottom: '20px' }}>Scan your Govt Soil Health Card or calculate exact fertilizer dosages for your land.</p>
-                <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                  <button onClick={() => setSoilCardOpen(true)} style={{ padding: '14px 22px', fontSize: '15px', fontWeight: 800, background: '#10b981', color: '#fff', border: 'none', borderRadius: '14px', cursor: 'pointer' }}>
-                    📷 Scan Soil Card (OCR)
-                  </button>
-                  <button onClick={() => setFertilizerCalcOpen(true)} style={{ padding: '14px 22px', fontSize: '15px', fontWeight: 800, background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '14px', cursor: 'pointer' }}>
-                    🧪 Fertilizer Calculator
-                  </button>
-                  <button onClick={() => setLedgerOpen(true)} style={{ padding: '14px 22px', fontSize: '15px', fontWeight: 800, background: '#f59e0b', color: '#0f172a', border: 'none', borderRadius: '14px', cursor: 'pointer' }}>
-                    📜 Farm Expense Ledger
-                  </button>
+            <div className="tab-screen">
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '32px' }}>🧪</span>
+                  <div>
+                    <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#38bdf8', margin: 0 }}>Soil & Ledger</h2>
+                    <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>NPK tracking & farm accounts</p>
+                  </div>
                 </div>
+
+                {/* 3 large action cards */}
+                <button onClick={() => setSoilCardOpen(true)} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '16px',
+                  padding: '20px 18px', fontSize: '16px', fontWeight: 800,
+                  background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.1))',
+                  border: '1.5px solid rgba(16,185,129,0.4)', borderRadius: '18px', cursor: 'pointer', color: '#fff',
+                  textAlign: 'left', boxShadow: '0 4px 20px rgba(16,185,129,0.15)'
+                }}>
+                  <span style={{ fontSize: '28px' }}>📷</span>
+                  <div>
+                    <div>Scan Soil Card (OCR)</div>
+                    <div style={{ fontSize: '12px', fontWeight: 500, color: '#6ee7b7', marginTop: '2px' }}>Read govt soil health card</div>
+                  </div>
+                </button>
+
+                <button onClick={() => setFertilizerCalcOpen(true)} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '16px',
+                  padding: '20px 18px', fontSize: '16px', fontWeight: 800,
+                  background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(14,165,233,0.1))',
+                  border: '1.5px solid rgba(56,189,248,0.4)', borderRadius: '18px', cursor: 'pointer', color: '#fff',
+                  textAlign: 'left', boxShadow: '0 4px 20px rgba(56,189,248,0.15)'
+                }}>
+                  <span style={{ fontSize: '28px' }}>🧮</span>
+                  <div>
+                    <div>Fertilizer Calculator</div>
+                    <div style={{ fontSize: '12px', fontWeight: 500, color: '#7dd3fc', marginTop: '2px' }}>Calculate exact NPK dosages</div>
+                  </div>
+                </button>
+
+                <button onClick={() => setLedgerOpen(true)} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '16px',
+                  padding: '20px 18px', fontSize: '16px', fontWeight: 800,
+                  background: 'linear-gradient(135deg, rgba(245,158,11,0.2), rgba(217,119,6,0.1))',
+                  border: '1.5px solid rgba(245,158,11,0.4)', borderRadius: '18px', cursor: 'pointer', color: '#fff',
+                  textAlign: 'left', boxShadow: '0 4px 20px rgba(245,158,11,0.15)'
+                }}>
+                  <span style={{ fontSize: '28px' }}>📒</span>
+                  <div>
+                    <div>Farm Expense Ledger</div>
+                    <div style={{ fontSize: '12px', fontWeight: 500, color: '#fcd34d', marginTop: '2px' }}>Track income & expenses</div>
+                  </div>
+                </button>
               </div>
             </div>
-          ) : marketOpen ? (
-            <MarketPrices language={language} onClose={() => setMarketOpen(false)} />
+          ) : homeTab === 'advisory' ? (
+            <div className="tab-screen" style={{ padding: '0' }}>
+              <MarketPrices language={language} onClose={() => { setMarketOpen(false); setHomeTab('scanner'); }} />
+            </div>
           ) : rotationOpen ? (
-            <CropRotation language={language} onClose={() => setRotationOpen(false)} />
+            <div className="tab-screen" style={{ padding: '0' }}>
+              <CropRotation language={language} onClose={() => setRotationOpen(false)} />
+            </div>
           ) : (
             <>
+
 
           {/* ══════════════════════════════════════════
               HERO / UPLOAD SECTION
@@ -3084,30 +3127,49 @@ export default function App() {
         scanContext={result ? `${result.plant?.common_name || 'Plant'} (${result.plant?.scientific_name || ''}): ${result.health?.disease || 'Healthy'}. Recommendation: ${result.recommendation || ''}` : ''}
       />
 
-      {/* ── BOTTOM NAVIGATION BAR (mobile only, hidden on desktop via CSS) ── */}
+      {/* ── STANDARD BOTTOM NAVIGATION BAR (WhatsApp / Instagram style) ── */}
       <nav className="bottom-nav">
+        {/* Home / Scanner Tab */}
         <button
-          className={`bottom-nav-item ${authMode === 'main' && !marketOpen && !rotationOpen && !result && !loading ? 'bnav-active' : ''}`}
-          onClick={() => { setMarketOpen(false); setRotationOpen(false); resetForm(); setAuthMode('main'); setMobileMenuOpen(false); }}
+          className={`bottom-nav-item ${homeTab === 'scanner' && authMode === 'main' ? 'bnav-active' : ''}`}
+          onClick={() => {
+            setHomeTab('scanner');
+            setMarketOpen(false);
+            setRotationOpen(false);
+            setGardenOpen(false);
+            setAuthMode('main');
+            setMobileMenuOpen(false);
+          }}
         >
           <span className="bnav-icon">🏠</span>
           <span className="bnav-label">Home</span>
         </button>
 
+        {/* Farm Tab */}
         <button
-          className={`bottom-nav-item ${gardenOpen ? 'bnav-active' : ''}`}
-          onClick={() => { if (!requireAuthForFeature()) return; setGardenOpen(true); setMobileMenuOpen(false); }}
+          className={`bottom-nav-item ${homeTab === 'farm' && authMode === 'main' ? 'bnav-active' : ''}`}
+          onClick={() => {
+            if (!requireAuthForFeature()) return;
+            setHomeTab('farm');
+            setGardenOpen(true);
+            setMarketOpen(false);
+            setRotationOpen(false);
+            setMobileMenuOpen(false);
+          }}
         >
-          <span className="bnav-icon">🚜</span>
+          <span className="bnav-icon">🌱</span>
           <span className="bnav-label">Farm</span>
         </button>
 
+        {/* Center Scan FAB */}
         <button
-          className="bottom-nav-item bnav-scan"
+          className={`bottom-nav-item bnav-scan ${homeTab === 'scanner' && authMode === 'main' ? 'bnav-active' : ''}`}
           onClick={() => {
             if (!requireAuthForFeature()) return;
+            setHomeTab('scanner');
             setMarketOpen(false);
             setRotationOpen(false);
+            setGardenOpen(false);
             setAuthMode('main');
             setMobileMenuOpen(false);
             if (result) resetForm();
@@ -3117,18 +3179,26 @@ export default function App() {
           <span className="bnav-label">Scan</span>
         </button>
 
+        {/* Mandi / Market Tab */}
         <button
-          className={`bottom-nav-item ${marketOpen ? 'bnav-active' : ''}`}
-          onClick={() => { if (!requireAuthForFeature()) return; setMarketOpen(true); setRotationOpen(false); setMobileMenuOpen(false); }}
+          className={`bottom-nav-item ${homeTab === 'advisory' && authMode === 'main' ? 'bnav-active' : ''}`}
+          onClick={() => {
+            if (!requireAuthForFeature()) return;
+            setHomeTab('advisory');
+            setMarketOpen(true);
+            setGardenOpen(false);
+            setRotationOpen(false);
+            setMobileMenuOpen(false);
+          }}
         >
           <span className="bnav-icon">📈</span>
           <span className="bnav-label">Mandi</span>
         </button>
 
+        {/* More / Menu Tab */}
         <button
-          className="bottom-nav-item"
+          className={`bottom-nav-item ${mobileMenuOpen ? 'bnav-active' : ''}`}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          style={{ position: 'relative' }}
         >
           <span className="bnav-icon">{mobileMenuOpen ? '✕' : '☰'}</span>
           <span className="bnav-label">More</span>

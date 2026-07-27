@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt uvicorn gunicorn
 
 # Copy backend code
 COPY app/ ./app
-COPY .env.example ./.env
+
 
 # Copy built frontend assets from stage 1 into frontend/dist
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist

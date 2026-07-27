@@ -1,5 +1,15 @@
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+ENV_FILE = PROJECT_ROOT / ".env"
+
+if ENV_FILE.exists():
+    load_dotenv(ENV_FILE, override=False)
 
 
 class Settings(BaseSettings):
@@ -31,9 +41,15 @@ class Settings(BaseSettings):
     PORT: int = 8000
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        extra="ignore"
+        env_file=str(ENV_FILE),
+        extra="ignore",
+        case_sensitive=False,
+        env_prefix=""
     )
+
+    def _read_setting(self, name: str) -> str:
+        value = getattr(self, name, "") or os.getenv(name, "")
+        return value.strip() if isinstance(value, str) else ""
 
     def get_gemini_key(self, purpose: str = "SCAN") -> str:
         """
@@ -41,21 +57,26 @@ class Settings(BaseSettings):
         and system os.environ with stripped whitespace.
         """
         purpose_upper = purpose.upper()
-        
+
         # 1. Dedicated purpose key (e.g. GEMINI_SCAN_API_KEY)
-        key = getattr(self, f"GEMINI_{purpose_upper}_API_KEY", "") or os.getenv(f"GEMINI_{purpose_upper}_API_KEY", "")
-        if key and key.strip() and key.strip() != "replace_with_openrouter_key":
-            return key.strip()
+        key = self._read_setting(f"GEMINI_{purpose_upper}_API_KEY")
+        if key and key != "replace_with_openrouter_key":
+            return key
 
         # 2. Main fallback GEMINI_API_KEY
-        key = self.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
-        if key and key.strip() and key.strip() != "replace_with_openrouter_key":
-            return key.strip()
+        key = self._read_setting("GEMINI_API_KEY")
+        if key and key != "replace_with_openrouter_key":
+            return key
 
-        # 3. OpenRouter key if formatted as direct Google AI key (AIzaSy...)
-        key = self.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")
-        if key and key.strip().startswith("AIzaSy"):
-            return key.strip()
+        # 3. Common Google alias used in some deployments
+        key = self._read_setting("GOOGLE_API_KEY")
+        if key and key != "replace_with_openrouter_key":
+            return key
+
+        # 4. OpenRouter key if formatted as direct Google AI key (AIzaSy...)
+        key = self._read_setting("OPENROUTER_API_KEY")
+        if key and key.startswith("AIzaSy"):
+            return key
 
         return ""
 

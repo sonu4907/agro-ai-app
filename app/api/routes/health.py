@@ -20,6 +20,11 @@ async def health_check():
 async def verify_gemini_keys():
     """Diagnostic endpoint to test and verify direct Gemini API key availability on Render."""
     results = {}
+    key_sources = {
+        "GEMINI_API_KEY": settings._read_setting("GEMINI_API_KEY"),
+        "GOOGLE_API_KEY": settings._read_setting("GOOGLE_API_KEY"),
+        "OPENROUTER_API_KEY": settings._read_setting("OPENROUTER_API_KEY"),
+    }
     purposes = ["SCAN", "CHAT", "IRRIGATION", "ROTATION"]
     
     for purpose in purposes:
@@ -59,5 +64,8 @@ async def verify_gemini_keys():
 
     return {
         "timestamp": datetime.utcnow().isoformat(),
-        "environment_check": results
+        "environment_check": results,
+        "configured_sources": {
+            name: bool(value) for name, value in key_sources.items()
+        }
     }

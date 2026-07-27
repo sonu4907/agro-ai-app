@@ -3,9 +3,11 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   sendEmailVerification,
 } from "firebase/auth";
+import type { User } from "firebase/auth";
 
 import {
   doc,
@@ -17,6 +19,41 @@ import {
 import { auth, db } from "../firebase";
 
 const googleProvider = new GoogleAuthProvider();
+
+function saveSessionUser(user: Pick<User, "uid" | "email" | "displayName">) {
+  localStorage.setItem("agroai_session_user", JSON.stringify({
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName || "Google User",
+  }));
+}
+
+async function ensureFirestoreProfile(user: User, provider: string) {
+  try {
+    const userRef = doc(db, "users", user.uid);
+    const userDoc = await getDoc(userRef);
+
+    const profileData = {
+      uid: user.uid,
+      displayName: user.displayName || user.email?.split("@")[0] || "User",
+      email: user.email || "",
+      provider,
+      emailVerified: user.emailVerified || false,
+      lastLoginAt: serverTimestamp(),
+    };
+
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        ...profileData,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    } else {
+      await setDoc(userRef, profileData, { merge: true });
+    }
+  } catch (fsErr) {
+    console.warn("Firestore profile sync skipped:", fsErr);
+  }
+}
 
 export async function signup(
   name: string,
@@ -51,12 +88,11 @@ export async function signup(
       console.warn("Could not send verification email:", verificationError);
     }
 
-    // Save local backup session
-    localStorage.setItem("agroai_session_user", JSON.stringify({
+    saveSessionUser({
       uid: credential.user.uid,
       email: credential.user.email,
       displayName: name || email.split("@")[0],
-    }));
+    });
 
     return credential.user;
   } catch (error: any) {
@@ -108,12 +144,11 @@ export async function login(
       console.warn("Firestore update skipped (network/permissions):", fsErr);
     }
 
-    // Save local backup session
-    localStorage.setItem("agroai_session_user", JSON.stringify({
+    saveSessionUser({
       uid: credential.user.uid,
       email: credential.user.email,
       displayName: credential.user.displayName || email.split("@")[0],
-    }));
+    });
 
     return credential.user;
   } catch (error: any) {
@@ -130,57 +165,44 @@ export async function login(
   }
 }
 
+export async function completeGoogleRedirectSignIn() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result?.user) {
+      return null;
+    }
+
+    await ensureFirestoreProfile(result.user, "google.com");
+    saveSessionUser(result.user);
+    return result.user;
+  } catch (error: any) {
+    console.error("Google redirect sign-in error:", error);
+    throw new Error(error.message || "Google sign-in could not be completed.");
+  }
+}
+
 export async function googleLogin() {
   try {
-    let credential;
-    try {
-      credential = await signInWithPopup(auth, googleProvider);
-    } catch (popupErr: any) {
-      if (popupErr.code === "auth/popup-blocked" || popupErr.code === "auth/operation-not-supported-in-this-environment") {
-        console.warn("Popup blocked, falling back to redirect...");
-        await signInWithRedirect(auth, googleProvider);
-        return null;
-      }
-      throw popupErr;
-    }
+    const credential = await signInWithPopup(auth, googleProvider);
 
     if (!credential || !credential.user) return null;
 
     console.log("Google login successful for:", credential.user.email);
-
-    try {
-      const userRef = doc(db, "users", credential.user.uid);
-      const userDoc = await getDoc(userRef);
-
-      if (!userDoc.exists()) {
-        await setDoc(userRef, {
-          uid: credential.user.uid,
-          displayName: credential.user.displayName || credential.user.email?.split("@")[0] || "Google User",
-          email: credential.user.email || "",
-          provider: "google.com",
-          emailVerified: credential.user.emailVerified || true,
-          createdAt: serverTimestamp(),
-          lastLoginAt: serverTimestamp(),
-        }, { merge: true });
-      } else {
-        await setDoc(userRef, {
-          displayName: credential.user.displayName,
-          email: credential.user.email,
-          lastLoginAt: serverTimestamp(),
-        }, { merge: true });
-      }
-    } catch (fsErr) {
-      console.warn("Firestore record creation skipped:", fsErr);
-    }
-
-    localStorage.setItem("agroai_session_user", JSON.stringify({
-      uid: credential.user.uid,
-      email: credential.user.email,
-      displayName: credential.user.displayName || "Google User",
-    }));
+    await ensureFirestoreProfile(credential.user, "google.com");
+    saveSessionUser(credential.user);
 
     return credential.user;
   } catch (error: any) {
+    if (error.code === "auth/popup-blocked" || error.code === "auth/operation-not-supported-in-this-environment") {
+      console.warn("Popup blocked, redirecting to Google sign-in...");
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+
+    if (error.code === "auth/popup-closed-by-user") {
+      throw new Error("Google sign-in was cancelled.");
+    }
+
     console.error("Google Login Error:", error);
     throw new Error(error.message || "Failed to sign in with Google.");
   }

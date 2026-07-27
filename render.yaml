@@ -6,7 +6,40 @@ services:
     dockerContext: .
     plan: free
     envVars:
+      # OpenRouter API Key (fallback for vision models)
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL
-        value: google/gemini-2.0-flash-001
+        value: google/gemini-2.5-flash
+
+      # Recommended primary Gemini API Key for Render and other deployments
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # Backup alias supported by the app
+      - key: GOOGLE_API_KEY
+        sync: false
+
+      # Dedicated per-function Gemini Keys (prevents 15 RPM rate limits)
+      - key: GEMINI_SCAN_API_KEY
+        sync: false
+      - key: GEMINI_CHAT_API_KEY
+        sync: false
+      - key: GEMINI_IRRIGATION_API_KEY
+        sync: false
+      - key: GEMINI_ROTATION_API_KEY
+        sync: false
+
+      # Telegram notifications
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        value: "8929876223"
+
+      # Garden IoT admin credentials
+      - key: GARDEN_ADMIN_USERNAME
+        value: Sunil
+      - key: GARDEN_ADMIN_PASSWORD
+        sync: false
+      - key: GARDEN_DEVICE_TOKEN
+        sync: false

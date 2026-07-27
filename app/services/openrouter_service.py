@@ -80,10 +80,9 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
     if gemini_key:
         logger.info("Direct Gemini API key detected for Plant Medic Scan.")
         direct_models = [
-            "gemini-1.5-flash",
             "gemini-2.0-flash",
+            "gemini-1.5-flash",
             "gemini-2.0-flash-lite",
-            "gemini-flash-latest"
         ]
         for direct_model in direct_models:
             logger.info(f"Trying direct Gemini model: {direct_model}...")
@@ -107,7 +106,7 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
                 }
             }
             try:
-                async with httpx.AsyncClient(timeout=30.0) as client:
+                async with httpx.AsyncClient(timeout=60.0) as client:
                     response = await client.post(url, json=payload)
                     if response.status_code == 200:
                         data = response.json()
@@ -115,17 +114,24 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
                             result_text = data["candidates"][0]["content"]["parts"][0]["text"]
                             logger.info(f"Successfully received analysis from direct Gemini API ({direct_model}).")
                             return result_text
-                    logger.warning(f"Direct Gemini ({direct_model}) returned {response.status_code}: {response.text[:200]}")
+                    logger.warning(f"Direct Gemini ({direct_model}) returned {response.status_code}: {response.text[:300]}")
             except Exception as e:
                 logger.warning(f"Direct Gemini API ({direct_model}) failed: {e}")
 
     # Fallback to OpenRouter if an OpenRouter key is provided
     openrouter_key = settings.OPENROUTER_API_KEY
     if openrouter_key and openrouter_key.startswith("sk-or-v1-"):
-        openrouter_models = [settings.OPENROUTER_MODEL] if settings.OPENROUTER_MODEL else []
+        # Build ordered model list: configured model first, then reliable free fallbacks
+        openrouter_models = []
+        configured_model = (settings.OPENROUTER_MODEL or "").strip()
+        # Only add configured model if it looks valid (not placeholder/empty)
+        if configured_model and configured_model not in ["", "openrouter/free", "replace_with_model"]:
+            openrouter_models.append(configured_model)
+        # Reliable free vision models as fallbacks
         for fallback in [
             "google/gemini-2.5-flash",
             "google/gemini-2.0-flash-exp:free",
+            "google/gemini-2.0-flash-lite-001",
             "meta-llama/llama-3.2-11b-vision-instruct:free",
             "qwen/qwen-2-vl-7b-instruct:free"
         ]:
@@ -156,7 +162,7 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
                 "max_tokens": 800
             }
             try:
-                async with httpx.AsyncClient(timeout=30.0) as client:
+                async with httpx.AsyncClient(timeout=60.0) as client:
                     response = await client.post(OPENROUTER_URL, headers=headers, json=payload)
                     if response.status_code == 200:
                         data = response.json()
@@ -164,7 +170,7 @@ async def call_openrouter_api(image_base64: str, mime_type: str, language: str =
                             result_text = data["choices"][0]["message"]["content"]
                             logger.info(f"Successfully received analysis from OpenRouter ({or_model}).")
                             return result_text
-                    logger.warning(f"OpenRouter ({or_model}) returned {response.status_code}: {response.text[:200]}")
+                    logger.warning(f"OpenRouter ({or_model}) returned {response.status_code}: {response.text[:300]}")
             except Exception as e:
                 logger.warning(f"OpenRouter call ({or_model}) failed: {e}")
 

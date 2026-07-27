@@ -5,7 +5,10 @@ const config: CapacitorConfig = {
   appName: 'Plant Medic',
   webDir: 'dist',
   server: {
-    cleartext: true
+    // Use the local web bundle (dist) but allow cleartext HTTP for local API fallback
+    cleartext: true,
+    // allowNavigation allows loading resources from Render backend
+    allowNavigation: ['agro-ai-ml-service.onrender.com']
   }
 };
 
