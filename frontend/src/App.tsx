@@ -3053,6 +3053,60 @@ export default function App() {
         </main>
       )}
 
+      {/* ── DESKTOP WEBSITE FOOTER ── */}
+      {authMode === 'main' && (
+        <footer className="website-footer">
+          <div className="wf-container">
+            <div className="wf-brand-col">
+              <div className="wf-logo">
+                <span className="wf-icon">🌿</span>
+                <span className="wf-title">AgroAI Plant Medic</span>
+              </div>
+              <p className="wf-desc">
+                AI-Powered Smart Agricultural Diagnostic & Farm Telemetry Platform for Next-Gen Precision Agriculture.
+              </p>
+              <div className="wf-status-badge">
+                <span className="wf-status-dot"></span>
+                <span>Render Cloud AI Engine: Online (v1.2.0)</span>
+              </div>
+            </div>
+
+            <div className="wf-links-col">
+              <h4>Quick Features</h4>
+              <button onClick={() => setHomeTab('scanner')}>📷 Plant Disease Scanner</button>
+              <button onClick={() => { setHomeTab('farm'); setGardenOpen(true); }}>🌾 Smart Farm Telemetry</button>
+              <button onClick={() => { setHomeTab('advisory'); setMarketOpen(true); }}>📈 Mandi Market Prices</button>
+              <button onClick={() => setFertilizerCalcOpen(true)}>🧪 Fertilizer Calculator</button>
+              <button onClick={() => setSoilCardOpen(true)}>📑 Soil Health Card</button>
+            </div>
+
+            <div className="wf-links-col">
+              <h4>Farm Tools & AI</h4>
+              <button onClick={() => setOutbreakRadarOpen(true)}>📡 Outbreak Radar</button>
+              <button onClick={() => setNdviOpen(true)}>🛰️ Satellite NDVI Monitor</button>
+              <button onClick={() => setLedgerOpen(true)}>📊 Farm Ledger</button>
+              <button onClick={() => setVoiceAssistantOpen(true)}>🎙️ Voice Assistant</button>
+              <button onClick={() => setPresentationOpen(true)}>📊 App Deck</button>
+            </div>
+
+            <div className="wf-info-col">
+              <h4>Technology Stack</h4>
+              <div className="wf-tags">
+                <span>FastAPI</span>
+                <span>OpenRouter Vision AI</span>
+                <span>Gemini 2.5</span>
+                <span>Capacitor Native</span>
+                <span>Firebase</span>
+                <span>ThingSpeak IoT</span>
+              </div>
+              <div className="wf-copyright">
+                © 2026 AgroAI Platform. All rights reserved. Precision Agriculture for Farmers Worldwide.
+              </div>
+            </div>
+          </div>
+        </footer>
+      )}
+
 
 
       {showShareModal && result && (
