@@ -26,6 +26,7 @@ import { saveScan } from './scanService'
 import { generatePDFDocument, getTextReportForSharing, sharePDFReport } from './services/reportService'
 import { addPendingScan, getPendingScans, removePendingScan } from './services/offlineQueueService'
 import { getApiUrl } from './services/apiConfig'
+import { executeResilientPrediction } from './services/directAiService'
 
 /* ── Interfaces ─────────────────────────────────────────── */
 interface PlantInfo {
@@ -889,22 +890,8 @@ export default function App() {
       }
     }
 
-    const fd = new FormData()
-    fd.append("image", fileToUpload)
-    fd.append("language", language)
     try {
-      const res = await fetch(getApiUrl("/api/v1/prediction/"), { method: "POST", body: fd })
-      if (!res.ok) {
-        let errorMessage = `Error ${res.status}`
-        try {
-          const errorData = (await res.json()) as { detail?: string; error?: string } | undefined
-          errorMessage = errorData?.detail || errorData?.error || errorMessage
-        } catch {
-          errorMessage = `Error ${res.status}`
-        }
-        throw new Error(errorMessage)
-      }
-      const data: AgroAIResponse = await res.json()
+      const data: AgroAIResponse = await executeResilientPrediction(fileToUpload, language);
       if (data.success) {
         setResult(data)
         // ── Save to scan history (local + Firestore for authenticated users) ──
@@ -936,7 +923,7 @@ export default function App() {
         setError(data.error || "Prediction failed.")
       }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "Failed to reach the server.")
+      setError(error instanceof Error ? error.message : "Failed to analyze plant image.")
     } finally { stopLoading(); setLoading(false) }
   }
 

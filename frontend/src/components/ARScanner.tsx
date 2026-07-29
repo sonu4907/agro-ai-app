@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { getApiUrl } from '../services/apiConfig'
+import { executeResilientPrediction } from '../services/directAiService'
 
 /* ═══════════════════════════════════════════════════════════
    TYPES
@@ -320,18 +320,12 @@ export default function ARScanner({
     stateRef.current = 'scanning'
     setLastCapture(frame)
 
-    const fd = new FormData()
-    fd.append('image', frame)
-    fd.append('language', language)
-
     try {
-      const res  = await fetch(getApiUrl('/api/v1/prediction/'), { method: 'POST', body: fd })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
+      const data = await executeResilientPrediction(frame, language)
       if (!data.success) throw new Error(data.error || 'Failed')
 
-      const health    = data.health || {}
-      const plant     = data.plant  || {}
+      const health    = data.health ?? { confidence: 0.5, is_healthy: true, disease: 'Healthy', severity: 'Low' }
+      const plant     = data.plant  ?? { common_name: 'Unknown Plant', scientific_name: '', family: '', crop_type: '', growth_stage: '' }
       const conf      = health.confidence ?? 0.5
       const isHealthy = health.is_healthy  ?? true
       const disease   = health.disease     || (isHealthy ? 'Healthy' : 'Unknown')
@@ -341,7 +335,7 @@ export default function ARScanner({
       const newState   = isHealthy ? 'result-healthy' : 'result-disease'
       stateRef.current = newState
       setScanState(newState)
-      setScanCount(c => c + 1)
+      setScanCount((c: number) => c + 1)
       setDetection({
         plant_name: plant.common_name  || 'Unknown Plant',
         disease,
@@ -367,7 +361,7 @@ export default function ARScanner({
     setScanState('idle')
     stateRef.current = 'idle'
     try {
-      if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop())
+      if (streamRef.current) streamRef.current.getTracks().forEach((t: MediaStreamTrack) => t.stop())
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
@@ -396,7 +390,7 @@ export default function ARScanner({
     return () => {
       cancelAnimationFrame(rafRef.current)
       if (scanIntervalRef.current) clearInterval(scanIntervalRef.current)
-      streamRef.current?.getTracks().forEach(t => t.stop())
+      streamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop())
       streamRef.current = null
     }
   }, [open])  // eslint-disable-line
@@ -421,7 +415,7 @@ export default function ARScanner({
     'result-healthy':'#22c55e',
     'result-disease':'#ef4444',
   }
-  const accentColor = stateColors[scanState]
+  const accentColor = stateColors[scanState as ScanState] || '#3b82f6'
 
   return (
     <div className="ar-root">
