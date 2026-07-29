@@ -59,6 +59,65 @@ Analyze the plant image and identify plant name, disease, health status, and ful
 Respond STRICTLY with valid JSON. No markdown backticks, no explanations.`;
 
 /**
+ * Resizes and compresses large camera images before network upload.
+ * Reduces 10MB camera photos down to ~90KB JPEG to prevent mobile network timeouts / "Failed to fetch" errors.
+ */
+export const optimizeImageForUpload = (blob: Blob, maxDim = 800, quality = 0.75): Promise<Blob> => {
+  return new Promise((resolve) => {
+    // If blob is already small (< 150KB), no need to re-encode
+    if (blob.size <= 150 * 1024) {
+      resolve(blob);
+      return;
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(blob);
+    img.src = url;
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement("canvas");
+      let w = img.width;
+      let h = img.height;
+
+      if (w > h) {
+        if (w > maxDim) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        }
+      } else {
+        if (h > maxDim) {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(blob);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (compressed) => {
+          resolve(compressed || blob);
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(blob);
+    };
+  });
+};
+
+/**
  * Converts a File or Blob object into a base64 Data URL string
  */
 const fileToBase64 = (file: Blob): Promise<string> => {
@@ -78,8 +137,9 @@ const fileToBase64 = (file: Blob): Promise<string> => {
  * Performs client-side direct OpenRouter AI call if backend server is unreachable
  */
 export async function directOpenRouterScan(file: Blob, language: string = "english"): Promise<AgroAIResponse> {
-  const base64Image = await fileToBase64(file);
-  const mimeType = file.type || "image/jpeg";
+  const optimizedFile = await optimizeImageForUpload(file);
+  const base64Image = await fileToBase64(optimizedFile);
+  const mimeType = "image/jpeg";
 
   const promptWithLang = `${DIRECT_PROMPT}\n\nLanguage for response: ${language}`;
 
@@ -128,18 +188,21 @@ export async function directOpenRouterScan(file: Blob, language: string = "engli
 }
 
 /**
- * Unified Prediction Scanner:
- * 1. Tries Render production backend API.
- * 2. If Render backend is offline/slow/returns an error, automatically executes direct client AI call.
+ * Unified Resilient Prediction Scanner:
+ * 1. Automatically resizes/compresses image from 10MB down to ~90KB to prevent network timeouts.
+ * 2. Tries Render production backend API.
+ * 3. If Render backend is offline/slow/returns an error, automatically executes direct client AI call.
  */
 export async function executeResilientPrediction(file: Blob, language: string = "english"): Promise<AgroAIResponse> {
+  const optimizedFile = await optimizeImageForUpload(file);
+
   const fd = new FormData();
-  fd.append("image", file);
+  fd.append("image", optimizedFile, "plant_leaf.jpg");
   fd.append("language", language);
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for backend check
+    const timeoutId = setTimeout(() => controller.abort(), 35000); // 35s timeout to allow Render free tier cold-starts
 
     const res = await fetch(getApiUrl("/api/v1/prediction/"), {
       method: "POST",
@@ -155,9 +218,9 @@ export async function executeResilientPrediction(file: Blob, language: string = 
       }
     }
   } catch (err) {
-    console.warn("Backend API request failed or timed out. Falling back to direct client-side AI...", err);
+    console.warn("Backend API request failed or timed out. Executing resilient direct client-side AI...", err);
   }
 
-  // Fallback: Direct client-side AI scan
-  return directOpenRouterScan(file, language);
+  // Fallback: Direct client-side AI scan on optimized 90KB payload
+  return directOpenRouterScan(optimizedFile, language);
 }
